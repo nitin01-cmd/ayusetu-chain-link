@@ -33,24 +33,34 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
 
   const [formData, setFormData] = useState({
     farmerQR: '',
+    farmerCode: '',
+    scanMethod: 'manual', // 'manual' or 'scan'
     receivedWeight: '',
-    conditionPhoto: '',
+    conditionPhotos: [] as string[],
+    batchQR: '',
+    batchId: '',
+    batchScanMethod: 'manual',
+    batchConditionPhotos: [] as string[],
     lotWeight: '',
     grade: '',
     moistureEstimate: '',
     waybillId: '',
     sealId: '',
+    sealPhoto: '',
     driverId: '',
-    vehicleNumber: ''
+    vehicleNumber: '',
+    recallBatchId: '',
+    recallReason: ''
   });
 
   const { toast } = useToast();
 
   const handleReceiveMaterial = () => {
-    if (!formData.farmerQR || !formData.receivedWeight) {
+    const farmerCode = formData.scanMethod === 'scan' ? formData.farmerQR : formData.farmerCode;
+    if (!farmerCode || !formData.receivedWeight) {
       toast({
         title: "Missing Information",
-        description: "Please fill in farmer QR code and weight",
+        description: "Please fill in farmer code/QR and weight",
         variant: "destructive"
       });
       return;
@@ -58,7 +68,7 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
 
     const newEvent = {
       id: `CE${String(collectionEvents.length + 1).padStart(3, '0')}`,
-      farmerCode: formData.farmerQR,
+      farmerCode: farmerCode,
       weight: formData.receivedWeight,
       status: 'received',
       timestamp: new Date().toLocaleString('en-IN'),
@@ -66,7 +76,13 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
     };
 
     setCollectionEvents([...collectionEvents, newEvent]);
-    setFormData({ ...formData, farmerQR: '', receivedWeight: '', conditionPhoto: '' });
+    setFormData({ 
+      ...formData, 
+      farmerQR: '', 
+      farmerCode: '', 
+      receivedWeight: '', 
+      conditionPhotos: [] 
+    });
     setActiveForm(null);
 
     toast({
@@ -74,6 +90,54 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
       description: `Successfully logged collection event ${newEvent.id}`,
       variant: "default"
     });
+  };
+
+  const handleInitiateRecall = () => {
+    if (!formData.recallBatchId || !formData.recallReason) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in batch ID and recall reason",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Recall Initiated",
+      description: `Batch ${formData.recallBatchId} has been flagged for recall. Notifications sent.`,
+      variant: "destructive"
+    });
+
+    setFormData({ ...formData, recallBatchId: '', recallReason: '' });
+    setActiveForm(null);
+  };
+
+  const simulateQRScan = (field: string) => {
+    const mockQR = `QR${Date.now().toString().slice(-6)}`;
+    if (field === 'farmer') {
+      setFormData({ ...formData, farmerQR: mockQR, scanMethod: 'scan' });
+    } else if (field === 'batch') {
+      setFormData({ ...formData, batchQR: mockQR, batchScanMethod: 'scan' });
+    }
+  };
+
+  const handlePhotoUpload = (field: string, files: FileList | null) => {
+    if (!files) return;
+    
+    const photoUrls: string[] = [];
+    Array.from(files).forEach(file => {
+      if (file.type.startsWith('image/')) {
+        photoUrls.push(`uploaded_${file.name}`);
+      }
+    });
+
+    if (field === 'condition') {
+      setFormData({ ...formData, conditionPhotos: [...formData.conditionPhotos, ...photoUrls] });
+    } else if (field === 'batch') {
+      setFormData({ ...formData, batchConditionPhotos: [...formData.batchConditionPhotos, ...photoUrls] });
+    } else if (field === 'seal') {
+      setFormData({ ...formData, sealPhoto: photoUrls[0] || '' });
+    }
   };
 
   const handleCreateLot = () => {
@@ -92,15 +156,23 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
       variant: "default"
     });
 
-    setFormData({ ...formData, lotWeight: '', grade: '', moistureEstimate: '' });
+    setFormData({ 
+      ...formData, 
+      batchQR: '',
+      batchId: '',
+      lotWeight: '', 
+      grade: '', 
+      moistureEstimate: '',
+      batchConditionPhotos: []
+    });
     setActiveForm(null);
   };
 
   const handleStartTransport = () => {
-    if (!formData.waybillId || !formData.vehicleNumber) {
+    if (!formData.waybillId || !formData.sealId || !formData.vehicleNumber) {
       toast({
         title: "Missing Information",
-        description: "Please fill in waybill ID and vehicle number",
+        description: "Please fill in waybill ID, seal ID and vehicle number",
         variant: "destructive"
       });
       return;
@@ -112,7 +184,14 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
       variant: "default"
     });
 
-    setFormData({ ...formData, waybillId: '', sealId: '', driverId: '', vehicleNumber: '' });
+    setFormData({ 
+      ...formData, 
+      waybillId: '', 
+      sealId: '', 
+      sealPhoto: '',
+      driverId: '', 
+      vehicleNumber: '' 
+    });
     setActiveForm(null);
   };
 
@@ -137,7 +216,7 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
       </div>
 
       {/* Action Buttons */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Button 
           onClick={() => setActiveForm('receive')}
           className="btn-government h-auto p-6 flex flex-col items-center space-y-2"
@@ -166,6 +245,16 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <span>Start Transport</span>
+        </Button>
+
+        <Button 
+          onClick={() => setActiveForm('recall')}
+          className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-auto p-6 flex flex-col items-center space-y-2"
+        >
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+          <span>Initiate Recall</span>
         </Button>
       </div>
 
@@ -212,39 +301,103 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
           <div className="gov-card-header">
             <h3 className="text-lg font-semibold">Receive Material from Farmer</h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="farmerQR">Farmer QR Code</Label>
-              <Input
-                id="farmerQR"
-                value={formData.farmerQR}
-                onChange={(e) => setFormData({...formData, farmerQR: e.target.value})}
-                placeholder="Scan or enter farmer QR code"
-                className="gov-input"
-              />
+          
+          {/* Farmer Input Method Selection */}
+          <div className="mb-6">
+            <Label className="text-base font-medium">Input Method</Label>
+            <div className="flex space-x-4 mt-2">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name="scanMethod"
+                  value="manual"
+                  checked={formData.scanMethod === 'manual'}
+                  onChange={(e) => setFormData({...formData, scanMethod: e.target.value, farmerQR: ''})}
+                />
+                <span>Manual Entry</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name="scanMethod"
+                  value="scan"
+                  checked={formData.scanMethod === 'scan'}
+                  onChange={(e) => setFormData({...formData, scanMethod: e.target.value, farmerCode: ''})}
+                />
+                <span>QR Code Scan</span>
+              </label>
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {formData.scanMethod === 'manual' ? (
+              <div>
+                <Label htmlFor="farmerCode">Farmer Code</Label>
+                <Input
+                  id="farmerCode"
+                  value={formData.farmerCode}
+                  onChange={(e) => setFormData({...formData, farmerCode: e.target.value})}
+                  placeholder="Enter farmer code manually"
+                  className="gov-input"
+                />
+              </div>
+            ) : (
+              <div>
+                <Label htmlFor="farmerQR">Farmer QR Code</Label>
+                <div className="flex space-x-2">
+                  <Input
+                    id="farmerQR"
+                    value={formData.farmerQR}
+                    onChange={(e) => setFormData({...formData, farmerQR: e.target.value})}
+                    placeholder="QR code result will appear here"
+                    className="gov-input"
+                    readOnly
+                  />
+                  <Button 
+                    type="button" 
+                    onClick={() => simulateQRScan('farmer')} 
+                    className="btn-secondary"
+                  >
+                    Scan QR
+                  </Button>
+                </div>
+              </div>
+            )}
+            
             <div>
-              <Label htmlFor="receivedWeight">Received Weight (kg)</Label>
+              <Label htmlFor="receivedWeight">Received Weight (kg) *</Label>
               <Input
                 id="receivedWeight"
                 type="number"
+                step="0.1"
                 value={formData.receivedWeight}
                 onChange={(e) => setFormData({...formData, receivedWeight: e.target.value})}
                 placeholder="Enter weight in kg"
                 className="gov-input"
+                required
               />
             </div>
+
             <div className="md:col-span-2">
-              <Label htmlFor="conditionPhoto">Condition Photo URL</Label>
-              <Input
-                id="conditionPhoto"
-                value={formData.conditionPhoto}
-                onChange={(e) => setFormData({...formData, conditionPhoto: e.target.value})}
-                placeholder="Upload or enter photo URL"
+              <Label htmlFor="conditionPhotos">Condition Photos (JPG/PNG)</Label>
+              <input
+                type="file"
+                id="conditionPhotos"
+                multiple
+                accept=".jpg,.jpeg,.png"
+                onChange={(e) => handlePhotoUpload('condition', e.target.files)}
                 className="gov-input"
               />
+              {formData.conditionPhotos.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-sm text-muted-foreground">
+                    Uploaded: {formData.conditionPhotos.join(', ')}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
+          
           <div className="flex space-x-4 mt-6">
             <Button onClick={handleReceiveMaterial} className="btn-government">
               Log Custody Transfer
@@ -261,25 +414,91 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
           <div className="gov-card-header">
             <h3 className="text-lg font-semibold">Create Lot (Aggregation & Grading)</h3>
           </div>
+
+          {/* Batch Input Method Selection */}
+          <div className="mb-6">
+            <Label className="text-base font-medium">Batch ID Input Method</Label>
+            <div className="flex space-x-4 mt-2">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name="batchScanMethod"
+                  value="manual"
+                  checked={formData.batchScanMethod === 'manual'}
+                  onChange={(e) => setFormData({...formData, batchScanMethod: e.target.value, batchQR: ''})}
+                />
+                <span>Manual Entry</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name="batchScanMethod"
+                  value="scan"
+                  checked={formData.batchScanMethod === 'scan'}
+                  onChange={(e) => setFormData({...formData, batchScanMethod: e.target.value, batchId: ''})}
+                />
+                <span>QR Code Scan</span>
+              </label>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {formData.batchScanMethod === 'manual' ? (
+              <div>
+                <Label htmlFor="batchId">Batch ID</Label>
+                <Input
+                  id="batchId"
+                  value={formData.batchId}
+                  onChange={(e) => setFormData({...formData, batchId: e.target.value})}
+                  placeholder="Enter batch ID manually"
+                  className="gov-input"
+                />
+              </div>
+            ) : (
+              <div>
+                <Label htmlFor="batchQR">Batch QR Code</Label>
+                <div className="flex space-x-2">
+                  <Input
+                    id="batchQR"
+                    value={formData.batchQR}
+                    onChange={(e) => setFormData({...formData, batchQR: e.target.value})}
+                    placeholder="QR code result will appear here"
+                    className="gov-input"
+                    readOnly
+                  />
+                  <Button 
+                    type="button" 
+                    onClick={() => simulateQRScan('batch')} 
+                    className="btn-secondary"
+                  >
+                    Scan QR
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <div>
-              <Label htmlFor="lotWeight">Total Lot Weight (kg)</Label>
+              <Label htmlFor="lotWeight">Total Lot Weight (kg) *</Label>
               <Input
                 id="lotWeight"
                 type="number"
+                step="0.1"
                 value={formData.lotWeight}
                 onChange={(e) => setFormData({...formData, lotWeight: e.target.value})}
                 placeholder="Enter total weight"
                 className="gov-input"
+                required
               />
             </div>
+            
             <div>
-              <Label htmlFor="grade">Grade</Label>
+              <Label htmlFor="grade">Grade *</Label>
               <select
                 id="grade"
                 value={formData.grade}
                 onChange={(e) => setFormData({...formData, grade: e.target.value})}
                 className="gov-select"
+                required
               >
                 <option value="">Select grade</option>
                 <option value="A">Grade A - Premium</option>
@@ -287,18 +506,40 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
                 <option value="C">Grade C - Basic</option>
               </select>
             </div>
-            <div className="md:col-span-2">
+            
+            <div>
               <Label htmlFor="moistureEstimate">Moisture Estimate (%)</Label>
               <Input
                 id="moistureEstimate"
                 type="number"
+                step="0.1"
                 value={formData.moistureEstimate}
                 onChange={(e) => setFormData({...formData, moistureEstimate: e.target.value})}
                 placeholder="Enter moisture percentage"
                 className="gov-input"
               />
             </div>
+
+            <div className="md:col-span-2">
+              <Label htmlFor="batchConditionPhotos">Batch Condition Photos (JPG/PNG)</Label>
+              <input
+                type="file"
+                id="batchConditionPhotos"
+                multiple
+                accept=".jpg,.jpeg,.png"
+                onChange={(e) => handlePhotoUpload('batch', e.target.files)}
+                className="gov-input"
+              />
+              {formData.batchConditionPhotos.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-sm text-muted-foreground">
+                    Uploaded: {formData.batchConditionPhotos.join(', ')}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
+          
           <div className="flex space-x-4 mt-6">
             <Button onClick={handleCreateLot} className="btn-government">
               Create Lot
@@ -317,25 +558,47 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="waybillId">Waybill/Manifest ID</Label>
+              <Label htmlFor="waybillId">Waybill/Manifest ID *</Label>
               <Input
                 id="waybillId"
                 value={formData.waybillId}
                 onChange={(e) => setFormData({...formData, waybillId: e.target.value})}
                 placeholder="Enter waybill ID"
                 className="gov-input"
+                required
               />
             </div>
+            
             <div>
-              <Label htmlFor="sealId">Seal ID</Label>
+              <Label htmlFor="sealId">Seal ID *</Label>
               <Input
                 id="sealId"
                 value={formData.sealId}
                 onChange={(e) => setFormData({...formData, sealId: e.target.value})}
                 placeholder="Enter seal ID"
                 className="gov-input"
+                required
               />
             </div>
+
+            <div className="md:col-span-2">
+              <Label htmlFor="sealPhoto">Seal Photo (JPG/PNG)</Label>
+              <input
+                type="file"
+                id="sealPhoto"
+                accept=".jpg,.jpeg,.png"
+                onChange={(e) => handlePhotoUpload('seal', e.target.files)}
+                className="gov-input"
+              />
+              {formData.sealPhoto && (
+                <div className="mt-2">
+                  <p className="text-sm text-muted-foreground">
+                    Uploaded: {formData.sealPhoto}
+                  </p>
+                </div>
+              )}
+            </div>
+            
             <div>
               <Label htmlFor="driverId">Driver ID</Label>
               <Input
@@ -347,19 +610,60 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
               />
             </div>
             <div>
-              <Label htmlFor="vehicleNumber">Vehicle Number</Label>
+              <Label htmlFor="vehicleNumber">Vehicle Number *</Label>
               <Input
                 id="vehicleNumber"
                 value={formData.vehicleNumber}
                 onChange={(e) => setFormData({...formData, vehicleNumber: e.target.value})}
                 placeholder="Enter vehicle number"
                 className="gov-input"
+                required
               />
             </div>
           </div>
           <div className="flex space-x-4 mt-6">
             <Button onClick={handleStartTransport} className="btn-government">
               Start Transport
+            </Button>
+            <Button onClick={() => setActiveForm(null)} variant="outline">
+              Cancel
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {activeForm === 'recall' && (
+        <Card className="gov-card animate-fade-in">
+          <div className="gov-card-header">
+            <h3 className="text-lg font-semibold">Initiate Product Recall</h3>
+          </div>
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <Label htmlFor="recallBatchId">Batch ID to Recall *</Label>
+              <Input
+                id="recallBatchId"
+                value={formData.recallBatchId}
+                onChange={(e) => setFormData({...formData, recallBatchId: e.target.value})}
+                placeholder="Enter batch ID for recall"
+                className="gov-input"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="recallReason">Recall Reason *</Label>
+              <textarea
+                id="recallReason"
+                value={formData.recallReason}
+                onChange={(e) => setFormData({...formData, recallReason: e.target.value})}
+                placeholder="Describe the reason for recall"
+                className="gov-input min-h-[100px] resize-vertical"
+                required
+              />
+            </div>
+          </div>
+          <div className="flex space-x-4 mt-6">
+            <Button onClick={handleInitiateRecall} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Initiate Recall
             </Button>
             <Button onClick={() => setActiveForm(null)} variant="outline">
               Cancel
