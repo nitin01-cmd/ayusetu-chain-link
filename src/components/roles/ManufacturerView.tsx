@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import FarmerDetailsDialog from '@/components/FarmerDetailsDialog';
 
 interface ManufacturerViewProps {
   userId: string;
@@ -191,6 +192,15 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
           </svg>
           <span>View QR Codes</span>
         </Button>
+
+        <FarmerDetailsDialog>
+          <Button className="btn-accent h-auto p-6 flex flex-col items-center space-y-2">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span>View Farmer Details</span>
+          </Button>
+        </FarmerDetailsDialog>
 
         <Button 
           onClick={() => setActiveForm('recall')}
