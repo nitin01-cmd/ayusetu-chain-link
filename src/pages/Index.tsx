@@ -1,50 +1,29 @@
-import { useState, useEffect } from 'react';
-import AuthPage from '@/components/AuthPage';
+import { useState } from 'react';
+import AuthComponent from '@/components/AuthComponent';
 import Dashboard from '@/components/Dashboard';
-import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
-  const { user, loading, signOut, getUserRole } = useAuth();
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState('');
+  const [userId, setUserId] = useState('');
 
-  useEffect(() => {
-    if (user) {
-      loadUserRole();
-    }
-  }, [user]);
-
-  const loadUserRole = async () => {
-    if (user) {
-      const { role } = await getUserRole(user.id);
-      setUserRole(role || null);
-    }
-  };
-
-  const handleAuthSuccess = (userId: string, role: string) => {
+  const handleLogin = (role: string, id: string) => {
     setUserRole(role);
+    setUserId(id);
+    setIsAuthenticated(true);
   };
 
-  const handleLogout = async () => {
-    await signOut();
-    setUserRole(null);
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setUserRole('');
+    setUserId('');
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-          <p className="mt-4 text-lg">Loading...</p>
-        </div>
-      </div>
-    );
+  if (!isAuthenticated) {
+    return <AuthComponent onLogin={handleLogin} />;
   }
 
-  if (!user || !userRole) {
-    return <AuthPage onSuccess={handleAuthSuccess} />;
-  }
-
-  return <Dashboard userRole={userRole} userId={user.id} onLogout={handleLogout} />;
+  return <Dashboard userRole={userRole} userId={userId} onLogout={handleLogout} />;
 };
 
 export default Index;
