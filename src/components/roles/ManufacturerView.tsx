@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import FarmerDetailsDialog from '@/components/FarmerDetailsDialog';
+import { useBatches } from '@/hooks/useBatches';
 
 interface ManufacturerViewProps {
   userId: string;
@@ -13,37 +14,7 @@ interface ManufacturerViewProps {
 
 const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
   const [activeForm, setActiveForm] = useState<string | null>(null);
-  const [processedBatches, setProcessedBatches] = useState([
-    {
-      id: 'BATCH001',
-      processorId: 'PROC001',
-      weight: '45.2',
-      status: 'available',
-      timestamp: '2024-01-15 18:30:00',
-      operation: 'drying'
-    },
-    {
-      id: 'BATCH002',
-      processorId: 'PROC001',
-      weight: '38.7',
-      status: 'used',
-      timestamp: '2024-01-15 19:15:00',
-      operation: 'extraction'
-    }
-  ]);
-
-  const [finalProducts, setFinalProducts] = useState([
-    {
-      id: 'FP001',
-      batchId: 'FP_BATCH_001',
-      inputBatches: ['BATCH001', 'BATCH002'],
-      qcResults: 'Pass',
-      qrCode: 'QR_FP001_ABC123',
-      status: 'ready',
-      timestamp: '2024-01-15 20:00:00',
-      isRecalled: false
-    }
-  ]);
+  const { batches, loading, createBatch, updateBatch } = useBatches('manufacturer', userId);
 
   const [formData, setFormData] = useState({
     selectedBatches: [] as string[],
@@ -55,7 +26,7 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
 
   const { toast } = useToast();
 
-  const handleCreateFinalProduct = () => {
+  const handleCreateFinalProduct = async () => {
     if (formData.selectedBatches.length === 0 || !formData.qcResults) {
       toast({
         title: "Missing Information",
@@ -65,43 +36,45 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
       return;
     }
 
-    const newProduct = {
-      id: `FP${String(finalProducts.length + 1).padStart(3, '0')}`,
-      batchId: `FP_BATCH_${String(finalProducts.length + 1).padStart(3, '0')}`,
-      inputBatches: [...formData.selectedBatches],
-      qcResults: formData.qcResults,
-      qrCode: `QR_FP${String(finalProducts.length + 1).padStart(3, '0')}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
-      status: 'ready',
-      timestamp: new Date().toLocaleString('en-IN'),
-      isRecalled: false
-    };
+    try {
+      await createBatch({
+        batch_id: `FP${Date.now().toString().slice(-6)}`,
+        type: 'final_product',
+        status: 'finalized',
+        quantity: formData.selectedBatches.reduce((total, batchId) => {
+          const batch = batches.find(b => b.batch_id === batchId);
+          return total + (batch?.quantity || 0);
+        }, 0),
+        product_name: 'Final Product',
+        metadata: {
+          inputBatches: [...formData.selectedBatches],
+          qcResults: formData.qcResults,
+          qrCode: `QR_FP${Date.now().toString().slice(-6)}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+          batchPercentages: formData.batchPercentages
+        }
+      });
 
-    setFinalProducts([...finalProducts, newProduct]);
-    
-    // Mark used batches
-    const updatedBatches = processedBatches.map(batch => 
-      formData.selectedBatches.includes(batch.id) 
-        ? { ...batch, status: 'used' }
-        : batch
-    );
-    setProcessedBatches(updatedBatches);
+      // Mark used batches
+      for (const batchId of formData.selectedBatches) {
+        const batch = batches.find(b => b.batch_id === batchId);
+        if (batch) {
+          await updateBatch(batch.id, { status: 'finalized' });
+        }
+      }
 
-    setFormData({ 
-      ...formData, 
-      selectedBatches: [], 
-      batchPercentages: {}, 
-      qcResults: '' 
-    });
-    setActiveForm(null);
-
-    toast({
-      title: "Final Product Created",
-      description: `Created ${newProduct.batchId} with QR code ${newProduct.qrCode}`,
-      variant: "default"
-    });
+      setFormData({ 
+        ...formData, 
+        selectedBatches: [], 
+        batchPercentages: {}, 
+        qcResults: '' 
+      });
+      setActiveForm(null);
+    } catch (error) {
+      console.error('Error creating final product:', error);
+    }
   };
 
-  const handleInitiateRecall = () => {
+  const handleInitiateRecall = async () => {
     if (!formData.recallBatchId || !formData.recallReason) {
       toast({
         title: "Missing Information",
@@ -111,21 +84,24 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
       return;
     }
 
-    const updatedProducts = finalProducts.map(product =>
-      product.batchId === formData.recallBatchId
-        ? { ...product, isRecalled: true, status: 'recalled' }
-        : product
-    );
-    setFinalProducts(updatedProducts);
+    try {
+      const batchToRecall = batches.find(b => b.batch_id === formData.recallBatchId);
+      if (batchToRecall) {
+        await updateBatch(batchToRecall.id, { 
+          status: 'recalled',
+          metadata: {
+            ...batchToRecall.metadata,
+            recallReason: formData.recallReason,
+            recallTimestamp: new Date().toISOString()
+          }
+        });
+      }
 
-    setFormData({ ...formData, recallBatchId: '', recallReason: '' });
-    setActiveForm(null);
-
-    toast({
-      title: "Recall Initiated",
-      description: `Batch ${formData.recallBatchId} has been marked for recall`,
-      variant: "destructive"
-    });
+      setFormData({ ...formData, recallBatchId: '', recallReason: '' });
+      setActiveForm(null);
+    } catch (error) {
+      console.error('Error initiating recall:', error);
+    }
   };
 
   const handleBatchSelection = (batchId: string) => {
@@ -152,7 +128,7 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
     }
   };
 
-  const availableBatches = processedBatches.filter(batch => batch.status === 'available');
+  const availableBatches = batches.filter(b => b.type === 'processed' && b.status !== 'finalized');
 
   return (
     <div className="space-y-8">
@@ -163,10 +139,10 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
         </div>
         <div className="flex space-x-4">
           <Badge className="badge-verified">
-            Available Batches: {availableBatches.length}
+            Available Batches: {batches.filter(b => b.type === 'processed' && b.status !== 'finalized').length}
           </Badge>
           <Badge className="badge-pending">
-            Final Products: {finalProducts.length}
+            Final Products: {batches.filter(b => b.type === 'final_product').length}
           </Badge>
         </div>
       </div>
@@ -231,20 +207,30 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
               </tr>
             </thead>
             <tbody>
-              {processedBatches.map((batch) => (
-                <tr key={batch.id} className="animate-fade-in">
-                  <td className="font-mono">{batch.id}</td>
-                  <td className="font-mono">{batch.processorId}</td>
-                  <td>{batch.weight}</td>
-                  <td className="capitalize">{batch.operation}</td>
-                  <td>
-                    <Badge className={getStatusColor(batch.status)}>
-                      {batch.status}
-                    </Badge>
-                  </td>
-                  <td>{batch.timestamp}</td>
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-4">Loading...</td>
                 </tr>
-              ))}
+              ) : batches.filter(b => b.type === 'processed').length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-4">No processed batches available</td>
+                </tr>
+              ) : (
+                batches.filter(b => b.type === 'processed').map((batch) => (
+                  <tr key={batch.id} className="animate-fade-in">
+                    <td className="font-mono">{batch.batch_id}</td>
+                    <td className="font-mono">{batch.current_owner_id}</td>
+                    <td>{batch.quantity}</td>
+                    <td className="capitalize">{batch.metadata?.operation || '-'}</td>
+                    <td>
+                      <Badge className={getStatusColor(batch.status)}>
+                        {batch.status}
+                      </Badge>
+                    </td>
+                    <td>{new Date(batch.created_at).toLocaleString('en-IN')}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -268,20 +254,30 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
               </tr>
             </thead>
             <tbody>
-              {finalProducts.map((product) => (
-                <tr key={product.id} className="animate-fade-in">
-                  <td className="font-mono">{product.id}</td>
-                  <td className="font-mono">{product.batchId}</td>
-                  <td className="font-mono text-xs">{product.inputBatches.join(', ')}</td>
-                  <td>{product.qcResults}</td>
-                  <td className="font-mono text-xs">{product.qrCode}</td>
-                  <td>
-                    <Badge className={getStatusColor(product.status)}>
-                      {product.isRecalled ? 'RECALLED' : product.status}
-                    </Badge>
-                  </td>
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-4">Loading...</td>
                 </tr>
-              ))}
+              ) : batches.filter(b => b.type === 'final_product').length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-4">No final products yet</td>
+                </tr>
+              ) : (
+                batches.filter(b => b.type === 'final_product').map((batch) => (
+                  <tr key={batch.id} className="animate-fade-in">
+                    <td className="font-mono">{batch.batch_id}</td>
+                    <td className="font-mono">{batch.batch_id}</td>
+                    <td className="font-mono text-xs">{batch.metadata?.inputBatches?.join(', ') || '-'}</td>
+                    <td>{batch.metadata?.qcResults || '-'}</td>
+                    <td className="font-mono text-xs">{batch.metadata?.qrCode || '-'}</td>
+                    <td>
+                      <Badge className={getStatusColor(batch.status)}>
+                        {batch.status === 'recalled' ? 'RECALLED' : batch.status}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -297,17 +293,17 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
             <div>
               <Label>Select Input Batches</Label>
               <div className="mt-2 space-y-2 max-h-40 overflow-y-auto">
-                {availableBatches.map((batch) => (
+                {batches.filter(b => b.type === 'processed' && b.status !== 'finalized').map((batch) => (
                   <div key={batch.id} className="flex items-center space-x-3">
                     <input
                       type="checkbox"
-                      id={batch.id}
-                      checked={formData.selectedBatches.includes(batch.id)}
-                      onChange={() => handleBatchSelection(batch.id)}
+                      id={batch.batch_id}
+                      checked={formData.selectedBatches.includes(batch.batch_id)}
+                      onChange={() => handleBatchSelection(batch.batch_id)}
                       className="rounded border-gray-300"
                     />
-                    <label htmlFor={batch.id} className="flex-1 text-sm">
-                      {batch.id} - {batch.weight}kg ({batch.operation})
+                    <label htmlFor={batch.batch_id} className="flex-1 text-sm">
+                      {batch.batch_id} - {batch.quantity}kg ({batch.metadata?.operation})
                     </label>
                   </div>
                 ))}
@@ -346,14 +342,14 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
             <h3 className="text-lg font-semibold">Generated QR Codes</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {finalProducts.map((product) => (
-              <div key={product.id} className="p-4 border rounded-lg">
-                <div className="font-mono text-sm mb-2">{product.batchId}</div>
+            {batches.filter(b => b.type === 'final_product').map((batch) => (
+              <div key={batch.id} className="p-4 border rounded-lg">
+                <div className="font-mono text-sm mb-2">{batch.batch_id}</div>
                 <div className="bg-gray-100 p-4 rounded text-center font-mono text-xs">
-                  {product.qrCode}
+                  {batch.metadata?.qrCode || 'QR Code'}
                 </div>
-                <Badge className={`mt-2 ${getStatusColor(product.status)}`}>
-                  {product.isRecalled ? 'RECALLED' : product.status}
+                <Badge className={`mt-2 ${getStatusColor(batch.status)}`}>
+                  {batch.status === 'recalled' ? 'RECALLED' : batch.status}
                 </Badge>
               </div>
             ))}
@@ -381,9 +377,9 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
                 className="gov-select mt-2"
               >
                 <option value="">Select batch to recall</option>
-                {finalProducts.filter(p => !p.isRecalled).map((product) => (
-                  <option key={product.batchId} value={product.batchId}>
-                    {product.batchId} - {product.qrCode}
+                {batches.filter(b => b.type === 'final_product' && b.status !== 'recalled').map((batch) => (
+                  <option key={batch.id} value={batch.batch_id}>
+                    {batch.batch_id} - {batch.metadata?.qrCode}
                   </option>
                 ))}
               </select>

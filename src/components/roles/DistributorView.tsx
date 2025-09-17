@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import FarmerDetailsDialog from '@/components/FarmerDetailsDialog';
+import { useBatches } from '@/hooks/useBatches';
 
 interface DistributorViewProps {
   userId: string;
@@ -13,41 +14,7 @@ interface DistributorViewProps {
 
 const DistributorView = ({ userId }: DistributorViewProps) => {
   const [activeForm, setActiveForm] = useState<string | null>(null);
-  const [finalProducts, setFinalProducts] = useState([
-    {
-      id: 'FP001',
-      batchId: 'FP_BATCH_001',
-      manufacturerId: 'MFG001',
-      qrCode: 'QR_FP001_ABC123',
-      status: 'ready_for_dispatch',
-      timestamp: '2024-01-15 20:00:00',
-      destination: ''
-    },
-    {
-      id: 'FP002',
-      batchId: 'FP_BATCH_002', 
-      manufacturerId: 'MFG001',
-      qrCode: 'QR_FP002_DEF456',
-      status: 'dispatched',
-      timestamp: '2024-01-15 21:30:00',
-      destination: 'Mumbai Retail Hub'
-    }
-  ]);
-
-  const [shipments, setShipments] = useState([
-    {
-      id: 'SHIP001',
-      batchId: 'FP_BATCH_002',
-      shipmentId: 'SH_2024_001',
-      vehicleNumber: 'MH-01-AB-1234',
-      driverName: 'Raj Kumar',
-      driverId: 'DR001',
-      destination: 'Mumbai Retail Hub',
-      dispatchTime: '2024-01-15 21:30:00',
-      status: 'in_transit',
-      gpsLocation: '19.0760, 72.8777'
-    }
-  ]);
+  const { batches, loading, updateBatch } = useBatches('distributor', userId);
 
   const [formData, setFormData] = useState({
     productQR: '',
@@ -144,10 +111,10 @@ const DistributorView = ({ userId }: DistributorViewProps) => {
         </div>
         <div className="flex space-x-4">
           <Badge className="badge-pending">
-            Ready for Dispatch: {availableProducts.length}
+            Ready for Dispatch: {batches.filter(b => b.type === 'final_product' && b.status === 'finalized').length}
           </Badge>
           <Badge className="badge-verified">
-            Active Shipments: {shipments.filter(s => s.status === 'in_transit').length}
+            Active Shipments: {batches.filter(b => b.status === 'dispatched').length}
           </Badge>
         </div>
       </div>

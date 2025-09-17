@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import FarmerDetailsDialog from '@/components/FarmerDetailsDialog';
+import { useBatches } from '@/hooks/useBatches';
 
 interface AggregatorViewProps {
   userId: string;
@@ -13,24 +14,7 @@ interface AggregatorViewProps {
 
 const AggregatorView = ({ userId }: AggregatorViewProps) => {
   const [activeForm, setActiveForm] = useState<string | null>(null);
-  const [collectionEvents, setCollectionEvents] = useState([
-    {
-      id: 'CE001',
-      farmerCode: 'F001',
-      weight: '50.5',
-      status: 'received',
-      timestamp: '2024-01-15 09:30:00',
-      condition: 'Good'
-    },
-    {
-      id: 'CE002', 
-      farmerCode: 'F002',
-      weight: '75.2',
-      status: 'processed',
-      timestamp: '2024-01-15 10:15:00',
-      condition: 'Excellent'
-    }
-  ]);
+  const { batches, loading, createBatch, updateBatch } = useBatches('aggregator', userId);
 
   const [formData, setFormData] = useState({
     farmerQR: '',
@@ -56,7 +40,7 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
 
   const { toast } = useToast();
 
-  const handleReceiveMaterial = () => {
+  const handleReceiveMaterial = async () => {
     const farmerCode = formData.scanMethod === 'scan' ? formData.farmerQR : formData.farmerCode;
     if (!farmerCode || !formData.receivedWeight) {
       toast({
@@ -67,30 +51,32 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
       return;
     }
 
-    const newEvent = {
-      id: `CE${String(collectionEvents.length + 1).padStart(3, '0')}`,
-      farmerCode: farmerCode,
-      weight: formData.receivedWeight,
-      status: 'received',
-      timestamp: new Date().toLocaleString('en-IN'),
-      condition: 'Good'
-    };
+    try {
+      await createBatch({
+        batch_id: `RM${Date.now().toString().slice(-6)}`,
+        type: 'raw_material',
+        status: 'received',
+        quantity: parseFloat(formData.receivedWeight),
+        product_name: 'Raw Material',
+        farmer_name: farmerCode,
+        metadata: {
+          condition: 'Good',
+          photos: formData.conditionPhotos,
+          scanMethod: formData.scanMethod
+        }
+      });
 
-    setCollectionEvents([...collectionEvents, newEvent]);
-    setFormData({ 
-      ...formData, 
-      farmerQR: '', 
-      farmerCode: '', 
-      receivedWeight: '', 
-      conditionPhotos: [] 
-    });
-    setActiveForm(null);
-
-    toast({
-      title: "Material Received",
-      description: `Successfully logged collection event ${newEvent.id}`,
-      variant: "default"
-    });
+      setFormData({ 
+        ...formData, 
+        farmerQR: '', 
+        farmerCode: '', 
+        receivedWeight: '', 
+        conditionPhotos: [] 
+      });
+      setActiveForm(null);
+    } catch (error) {
+      console.error('Error receiving material:', error);
+    }
   };
 
   const handleInitiateRecall = () => {
@@ -141,7 +127,7 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
     }
   };
 
-  const handleCreateLot = () => {
+  const handleCreateLot = async () => {
     if (!formData.lotWeight || !formData.grade) {
       toast({
         title: "Missing Information", 
@@ -151,22 +137,34 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
       return;
     }
 
-    toast({
-      title: "Lot Created",
-      description: `New lot created with weight ${formData.lotWeight}kg, Grade: ${formData.grade}`,
-      variant: "default"
-    });
+    try {
+      await createBatch({
+        batch_id: `LOT${Date.now().toString().slice(-6)}`,
+        type: 'lot',
+        status: 'created',
+        quantity: parseFloat(formData.lotWeight),
+        product_name: 'Consolidated Lot',
+        metadata: {
+          grade: formData.grade,
+          moistureEstimate: formData.moistureEstimate,
+          photos: formData.batchConditionPhotos,
+          sourceBatchId: formData.batchScanMethod === 'scan' ? formData.batchQR : formData.batchId
+        }
+      });
 
-    setFormData({ 
-      ...formData, 
-      batchQR: '',
-      batchId: '',
-      lotWeight: '', 
-      grade: '', 
-      moistureEstimate: '',
-      batchConditionPhotos: []
-    });
-    setActiveForm(null);
+      setFormData({ 
+        ...formData, 
+        batchQR: '',
+        batchId: '',
+        lotWeight: '', 
+        grade: '', 
+        moistureEstimate: '',
+        batchConditionPhotos: []
+      });
+      setActiveForm(null);
+    } catch (error) {
+      console.error('Error creating lot:', error);
+    }
   };
 
   const handleStartTransport = () => {
@@ -212,7 +210,7 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
           <p className="text-muted-foreground">Manage raw material collection and preparation for transport</p>
         </div>
         <Badge className="badge-verified">
-          Active Collections: {collectionEvents.length}
+          Active Collections: {batches.length}
         </Badge>
       </div>
 
@@ -286,20 +284,30 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
               </tr>
             </thead>
             <tbody>
-              {collectionEvents.map((event) => (
-                <tr key={event.id} className="animate-fade-in">
-                  <td className="font-mono">{event.id}</td>
-                  <td className="font-mono">{event.farmerCode}</td>
-                  <td>{event.weight}</td>
-                  <td>
-                    <Badge className={getStatusColor(event.status)}>
-                      {event.status}
-                    </Badge>
-                  </td>
-                  <td>{event.timestamp}</td>
-                  <td>{event.condition}</td>
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-4">Loading...</td>
                 </tr>
-              ))}
+              ) : batches.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-4">No collection events yet</td>
+                </tr>
+              ) : (
+                batches.map((batch) => (
+                  <tr key={batch.id} className="animate-fade-in">
+                    <td className="font-mono">{batch.batch_id}</td>
+                    <td className="font-mono">{batch.farmer_name || '-'}</td>
+                    <td>{batch.quantity}</td>
+                    <td>
+                      <Badge className={getStatusColor(batch.status)}>
+                        {batch.status}
+                      </Badge>
+                    </td>
+                    <td>{new Date(batch.created_at).toLocaleString('en-IN')}</td>
+                    <td>{batch.metadata?.condition || 'Good'}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

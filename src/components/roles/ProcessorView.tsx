@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import FarmerDetailsDialog from '@/components/FarmerDetailsDialog';
+import { useBatches } from '@/hooks/useBatches';
 
 interface ProcessorViewProps {
   userId: string;
@@ -13,49 +14,7 @@ interface ProcessorViewProps {
 
 const ProcessorView = ({ userId }: ProcessorViewProps) => {
   const [activeForm, setActiveForm] = useState<string | null>(null);
-  const [receivedLots, setReceivedLots] = useState([
-    {
-      id: 'LOT001',
-      aggregatorId: 'AGG001',
-      weight: '125.7',
-      status: 'received',
-      timestamp: '2024-01-15 14:30:00',
-      condition: 'Good'
-    },
-    {
-      id: 'LOT002',
-      aggregatorId: 'AGG001', 
-      weight: '98.3',
-      status: 'processing',
-      timestamp: '2024-01-15 15:15:00',
-      condition: 'Excellent'
-    }
-  ]);
-
-  const [processingSteps, setProcessingSteps] = useState([
-    {
-      id: 'PS001',
-      parentLotId: 'LOT001',
-      childBatchId: 'BATCH001',
-      operation: 'drying',
-      equipmentId: 'DRY001',
-      operatorId: 'OP001',
-      parameters: 'Temp: 60°C, Duration: 8hrs',
-      timestamp: '2024-01-15 16:00:00'
-    }
-  ]);
-
-  const [qualityTests, setQualityTests] = useState([
-    {
-      id: 'QT001',
-      batchId: 'BATCH001',
-      testType: 'AYUSH Premium Certification',
-      results: 'Grade A - Premium Quality',
-      certificate: 'AYUSH_CERT_001.pdf',
-      authority: 'Ministry of AYUSH',
-      timestamp: '2024-01-15 18:00:00'
-    }
-  ]);
+  const { batches, loading, createBatch, updateBatch } = useBatches('processor', userId);
 
   const [formData, setFormData] = useState({
     lotQR: '',
@@ -82,7 +41,7 @@ const ProcessorView = ({ userId }: ProcessorViewProps) => {
 
   const { toast } = useToast();
 
-  const handleReceiveLot = () => {
+  const handleReceiveLot = async () => {
     if (!formData.lotQR || !formData.receivedWeight) {
       toast({
         title: "Missing Information",
@@ -92,33 +51,36 @@ const ProcessorView = ({ userId }: ProcessorViewProps) => {
       return;
     }
 
-    const newLot = {
-      id: formData.lotQR,
-      aggregatorId: 'AGG001',
-      weight: formData.receivedWeight,
-      status: 'received',
-      timestamp: new Date().toLocaleString('en-IN'),
-      condition: 'Good'
-    };
+    try {
+      // Find the lot to receive and update its status
+      const lotToReceive = batches.find(b => b.batch_id === formData.lotQR && b.type === 'lot');
+      if (lotToReceive) {
+        await updateBatch(lotToReceive.id, {
+          status: 'received',
+          current_owner_id: userId,
+          metadata: {
+            ...lotToReceive.metadata,
+            receivedWeight: formData.receivedWeight,
+            discrepancies: formData.discrepancies,
+            conditionPhotos: formData.conditionPhotos
+          }
+        });
+      }
 
-    setReceivedLots([...receivedLots, newLot]);
-    setFormData({ 
-      ...formData, 
-      lotQR: '', 
-      receivedWeight: '', 
-      conditionPhotos: [], 
-      discrepancies: '' 
-    });
-    setActiveForm(null);
-
-    toast({
-      title: "Lot Received",
-      description: `Successfully logged lot ${newLot.id}`,
-      variant: "default"
-    });
+      setFormData({ 
+        ...formData, 
+        lotQR: '', 
+        receivedWeight: '', 
+        conditionPhotos: [], 
+        discrepancies: '' 
+      });
+      setActiveForm(null);
+    } catch (error) {
+      console.error('Error receiving lot:', error);
+    }
   };
 
-  const handleLogProcessing = () => {
+  const handleLogProcessing = async () => {
     if (!formData.parentLotId || !formData.operationType || !formData.temperature || !formData.duration) {
       toast({
         title: "Missing Information",
@@ -128,38 +90,41 @@ const ProcessorView = ({ userId }: ProcessorViewProps) => {
       return;
     }
 
-    const newStep = {
-      id: `PS${String(processingSteps.length + 1).padStart(3, '0')}`,
-      parentLotId: formData.parentLotId,
-      childBatchId: `BATCH${String(processingSteps.length + 1).padStart(3, '0')}`,
-      operation: formData.operationType,
-      equipmentId: formData.equipmentId || 'N/A',
-      operatorId: formData.operatorId || 'N/A',
-      parameters: `Temp: ${formData.temperature}°C, Duration: ${formData.duration}hrs`,
-      timestamp: new Date().toLocaleString('en-IN')
-    };
+    try {
+      await createBatch({
+        batch_id: `PROC${Date.now().toString().slice(-6)}`,
+        type: 'processed',
+        status: 'processing',
+        quantity: 0, // Will be updated based on processing
+        product_name: `Processed ${formData.operationType}`,
+        metadata: {
+          parentLotId: formData.parentLotId,
+          operation: formData.operationType,
+          equipmentId: formData.equipmentId || 'N/A',
+          operatorId: formData.operatorId || 'N/A',
+          temperature: formData.temperature,
+          duration: formData.duration,
+          processPhotos: formData.processPhotos
+        }
+      });
 
-    setProcessingSteps([...processingSteps, newStep]);
-    setFormData({ 
-      ...formData, 
-      parentLotId: '', 
-      operationType: '', 
-      equipmentId: '', 
-      operatorId: '', 
-      temperature: '', 
-      duration: '', 
-      processPhotos: [] 
-    });
-    setActiveForm(null);
-
-    toast({
-      title: "Processing Step Logged",
-      description: `Created batch ${newStep.childBatchId} from ${formData.operationType} operation`,
-      variant: "default"
-    });
+      setFormData({ 
+        ...formData, 
+        parentLotId: '', 
+        operationType: '', 
+        equipmentId: '', 
+        operatorId: '', 
+        temperature: '', 
+        duration: '', 
+        processPhotos: [] 
+      });
+      setActiveForm(null);
+    } catch (error) {
+      console.error('Error logging processing step:', error);
+    }
   };
 
-  const handleQualityTest = () => {
+  const handleQualityTest = async () => {
     if (!formData.testBatchId || !formData.testType || !formData.testResults) {
       toast({
         title: "Missing Information",
@@ -169,32 +134,36 @@ const ProcessorView = ({ userId }: ProcessorViewProps) => {
       return;
     }
 
-    const newTest = {
-      id: `QT${String(qualityTests.length + 1).padStart(3, '0')}`,
-      batchId: formData.testBatchId,
-      testType: formData.testType,
-      results: formData.testResults,
-      certificate: formData.certificatePDF || 'N/A',
-      authority: formData.authorizingAuthority || 'Internal Lab',
-      timestamp: new Date().toLocaleString('en-IN')
-    };
+    try {
+      // Find the batch to update with quality test results
+      const batchToTest = batches.find(b => b.batch_id === formData.testBatchId);
+      if (batchToTest) {
+        await updateBatch(batchToTest.id, {
+          metadata: {
+            ...batchToTest.metadata,
+            qualityTest: {
+              testType: formData.testType,
+              results: formData.testResults,
+              certificate: formData.certificatePDF || 'N/A',
+              authority: formData.authorizingAuthority || 'Internal Lab',
+              timestamp: new Date().toISOString()
+            }
+          }
+        });
+      }
 
-    setQualityTests([...qualityTests, newTest]);
-    setFormData({
-      ...formData,
-      testBatchId: '',
-      testType: '',
-      testResults: '',
-      certificatePDF: '',
-      authorizingAuthority: ''
-    });
-    setActiveForm(null);
-
-    toast({
-      title: "Quality Test Recorded",
-      description: `Test ${newTest.id} logged for batch ${formData.testBatchId}`,
-      variant: "default"
-    });
+      setFormData({
+        ...formData,
+        testBatchId: '',
+        testType: '',
+        testResults: '',
+        certificatePDF: '',
+        authorizingAuthority: ''
+      });
+      setActiveForm(null);
+    } catch (error) {
+      console.error('Error recording quality test:', error);
+    }
   };
 
   const handleInitiateRecall = () => {
@@ -286,13 +255,10 @@ const ProcessorView = ({ userId }: ProcessorViewProps) => {
         </div>
         <div className="flex space-x-4">
           <Badge className="badge-pending">
-            Received Lots: {receivedLots.length}
+            Available Lots: {batches.filter(b => b.type === 'lot').length}
           </Badge>
           <Badge className="badge-verified">
-            Processing Steps: {processingSteps.length}
-          </Badge>
-          <Badge className="badge-verified">
-            Quality Tests: {qualityTests.length}
+            Processing Steps: {batches.filter(b => b.type === 'processed').length}
           </Badge>
         </div>
       </div>
@@ -368,20 +334,30 @@ const ProcessorView = ({ userId }: ProcessorViewProps) => {
               </tr>
             </thead>
             <tbody>
-              {receivedLots.map((lot) => (
-                <tr key={lot.id} className="animate-fade-in">
-                  <td className="font-mono">{lot.id}</td>
-                  <td className="font-mono">{lot.aggregatorId}</td>
-                  <td>{lot.weight}</td>
-                  <td>
-                    <Badge className={getStatusColor(lot.status)}>
-                      {lot.status}
-                    </Badge>
-                  </td>
-                  <td>{lot.timestamp}</td>
-                  <td>{lot.condition}</td>
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-4">Loading...</td>
                 </tr>
-              ))}
+              ) : batches.filter(b => b.type === 'lot').length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-4">No lots received yet</td>
+                </tr>
+              ) : (
+                batches.filter(b => b.type === 'lot').map((batch) => (
+                  <tr key={batch.id} className="animate-fade-in">
+                    <td className="font-mono">{batch.batch_id}</td>
+                    <td className="font-mono">{batch.current_owner_id}</td>
+                    <td>{batch.quantity}</td>
+                    <td>
+                      <Badge className={getStatusColor(batch.status)}>
+                        {batch.status}
+                      </Badge>
+                    </td>
+                    <td>{new Date(batch.created_at).toLocaleString('en-IN')}</td>
+                    <td>{batch.metadata?.condition || 'Good'}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -406,17 +382,27 @@ const ProcessorView = ({ userId }: ProcessorViewProps) => {
               </tr>
             </thead>
             <tbody>
-              {processingSteps.map((step) => (
-                <tr key={step.id} className="animate-fade-in">
-                  <td className="font-mono">{step.id}</td>
-                  <td className="font-mono">{step.parentLotId}</td>
-                  <td className="font-mono">{step.childBatchId}</td>
-                  <td className="capitalize">{step.operation}</td>
-                  <td className="font-mono">{step.equipmentId}</td>
-                  <td className="text-sm">{step.parameters}</td>
-                  <td>{step.timestamp}</td>
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-4">Loading...</td>
                 </tr>
-              ))}
+              ) : batches.filter(b => b.type === 'processed').length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-4">No processing steps yet</td>
+                </tr>
+              ) : (
+                batches.filter(b => b.type === 'processed').map((batch) => (
+                  <tr key={batch.id} className="animate-fade-in">
+                    <td className="font-mono">{batch.batch_id}</td>
+                    <td className="font-mono">{batch.metadata?.parentLotId || '-'}</td>
+                    <td className="font-mono">{batch.batch_id}</td>
+                    <td className="capitalize">{batch.metadata?.operation || '-'}</td>
+                    <td className="font-mono">{batch.metadata?.equipmentId || '-'}</td>
+                    <td className="text-sm">{batch.metadata?.temperature ? `Temp: ${batch.metadata.temperature}°C, Duration: ${batch.metadata.duration}hrs` : '-'}</td>
+                    <td>{new Date(batch.created_at).toLocaleString('en-IN')}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -441,17 +427,27 @@ const ProcessorView = ({ userId }: ProcessorViewProps) => {
               </tr>
             </thead>
             <tbody>
-              {qualityTests.map((test) => (
-                <tr key={test.id} className="animate-fade-in">
-                  <td className="font-mono">{test.id}</td>
-                  <td className="font-mono">{test.batchId}</td>
-                  <td>{test.testType}</td>
-                  <td>{test.results}</td>
-                  <td className="font-mono text-sm">{test.certificate}</td>
-                  <td>{test.authority}</td>
-                  <td>{test.timestamp}</td>
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-4">Loading...</td>
                 </tr>
-              ))}
+              ) : batches.filter(b => b.metadata?.qualityTest).length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-4">No quality tests yet</td>
+                </tr>
+              ) : (
+                batches.filter(b => b.metadata?.qualityTest).map((batch) => (
+                  <tr key={batch.id} className="animate-fade-in">
+                    <td className="font-mono">{batch.batch_id}</td>
+                    <td className="font-mono">{batch.batch_id}</td>
+                    <td>{batch.metadata?.qualityTest?.testType}</td>
+                    <td>{batch.metadata?.qualityTest?.results}</td>
+                    <td className="font-mono text-sm">{batch.metadata?.qualityTest?.certificate}</td>
+                    <td>{batch.metadata?.qualityTest?.authority}</td>
+                    <td>{batch.metadata?.qualityTest?.timestamp ? new Date(batch.metadata.qualityTest.timestamp).toLocaleString('en-IN') : '-'}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -552,10 +548,10 @@ const ProcessorView = ({ userId }: ProcessorViewProps) => {
                 className="gov-select"
                 required
               >
-                <option value="">Select parent lot</option>
-                {receivedLots.map((lot) => (
-                  <option key={lot.id} value={lot.id}>{lot.id}</option>
-                ))}
+                 <option value="">Select parent lot</option>
+                 {batches.filter(b => b.type === 'lot').map((batch) => (
+                   <option key={batch.id} value={batch.batch_id}>{batch.batch_id}</option>
+                 ))}
               </select>
             </div>
             <div>
@@ -664,10 +660,10 @@ const ProcessorView = ({ userId }: ProcessorViewProps) => {
                 className="gov-select"
                 required
               >
-                <option value="">Select batch</option>
-                {processingSteps.map((step) => (
-                  <option key={step.childBatchId} value={step.childBatchId}>{step.childBatchId}</option>
-                ))}
+                 <option value="">Select batch</option>
+                 {batches.filter(b => b.type === 'processed').map((batch) => (
+                   <option key={batch.id} value={batch.batch_id}>{batch.batch_id}</option>
+                 ))}
               </select>
             </div>
             <div>
@@ -750,10 +746,10 @@ const ProcessorView = ({ userId }: ProcessorViewProps) => {
                 className="gov-select"
                 required
               >
-                <option value="">Select batch to recall</option>
-                {processingSteps.map((step) => (
-                  <option key={step.childBatchId} value={step.childBatchId}>{step.childBatchId}</option>
-                ))}
+                 <option value="">Select batch to recall</option>
+                 {batches.filter(b => b.type === 'processed').map((batch) => (
+                   <option key={batch.id} value={batch.batch_id}>{batch.batch_id}</option>
+                 ))}
               </select>
             </div>
             <div>
