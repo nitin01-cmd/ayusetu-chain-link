@@ -15,6 +15,7 @@ interface DistributorViewProps {
 const DistributorView = ({ userId }: DistributorViewProps) => {
   const [activeForm, setActiveForm] = useState<string | null>(null);
   const { batches, loading, updateBatch } = useBatches('distributor', userId);
+  const [shipments, setShipments] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     productQR: '',
@@ -27,7 +28,12 @@ const DistributorView = ({ userId }: DistributorViewProps) => {
 
   const { toast } = useToast();
 
-  const handleDispatchProduct = () => {
+  // Filter batches for final products ready for dispatch
+  const finalProducts = batches.filter(batch => 
+    batch.type === 'final_product' && batch.status === 'finalized'
+  );
+
+  const handleDispatchProduct = async () => {
     if (!formData.productQR || !formData.shipmentId || !formData.vehicleNumber || !formData.destination) {
       toast({
         title: "Missing Information",
@@ -38,11 +44,11 @@ const DistributorView = ({ userId }: DistributorViewProps) => {
     }
 
     // Find the product to dispatch
-    const productToDispatch = finalProducts.find(p => p.qrCode === formData.productQR);
+    const productToDispatch = finalProducts.find(p => p.id === formData.productQR);
     if (!productToDispatch) {
       toast({
         title: "Product Not Found",
-        description: "Could not find product with the specified QR code",
+        description: "Could not find product with the specified ID",
         variant: "destructive"
       });
       return;
@@ -51,7 +57,7 @@ const DistributorView = ({ userId }: DistributorViewProps) => {
     // Create new shipment
     const newShipment = {
       id: `SHIP${String(shipments.length + 1).padStart(3, '0')}`,
-      batchId: productToDispatch.batchId,
+      batchId: productToDispatch.batch_id,
       shipmentId: formData.shipmentId,
       vehicleNumber: formData.vehicleNumber,
       driverName: formData.driverName,
@@ -64,30 +70,35 @@ const DistributorView = ({ userId }: DistributorViewProps) => {
 
     setShipments([...shipments, newShipment]);
 
-    // Update product status
-    const updatedProducts = finalProducts.map(product =>
-      product.qrCode === formData.productQR
-        ? { ...product, status: 'dispatched', destination: formData.destination }
-        : product
-    );
-    setFinalProducts(updatedProducts);
+    // Update batch status to dispatched
+    try {
+      await updateBatch(productToDispatch.id, { 
+        status: 'dispatched',
+        destination_location: formData.destination 
+      });
 
-    setFormData({
-      ...formData,
-      productQR: '',
-      shipmentId: '',
-      vehicleNumber: '',
-      driverName: '',
-      driverId: '',
-      destination: ''
-    });
-    setActiveForm(null);
+      setFormData({
+        productQR: '',
+        shipmentId: '',
+        vehicleNumber: '',
+        driverName: '',
+        driverId: '',
+        destination: ''
+      });
+      setActiveForm(null);
 
-    toast({
-      title: "Product Dispatched",
-      description: `Shipment ${newShipment.shipmentId} created for ${productToDispatch.batchId}`,
-      variant: "default"
-    });
+      toast({
+        title: "Product Dispatched",
+        description: `Shipment ${newShipment.shipmentId} created for ${productToDispatch.batch_id}`,
+        variant: "default"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update batch status",
+        variant: "destructive"
+      });
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -100,7 +111,7 @@ const DistributorView = ({ userId }: DistributorViewProps) => {
     }
   };
 
-  const availableProducts = finalProducts.filter(product => product.status === 'ready_for_dispatch');
+  const availableProducts = finalProducts.filter(product => product.status === 'finalized');
 
   return (
     <div className="space-y-8">
@@ -184,16 +195,16 @@ const DistributorView = ({ userId }: DistributorViewProps) => {
               {finalProducts.map((product) => (
                 <tr key={product.id} className="animate-fade-in">
                   <td className="font-mono">{product.id}</td>
-                  <td className="font-mono">{product.batchId}</td>
-                  <td className="font-mono">{product.manufacturerId}</td>
-                  <td className="font-mono text-xs">{product.qrCode}</td>
+                  <td className="font-mono">{product.batch_id}</td>
+                  <td className="font-mono">{product.current_owner_id}</td>
+                  <td className="font-mono text-xs">{product.id}</td>
                   <td>
                     <Badge className={getStatusColor(product.status)}>
                       {product.status.replace('_', ' ')}
                     </Badge>
                   </td>
-                  <td>{product.destination || '-'}</td>
-                  <td>{product.timestamp}</td>
+                  <td>{product.destination_location || '-'}</td>
+                  <td>{new Date(product.created_at).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -250,7 +261,7 @@ const DistributorView = ({ userId }: DistributorViewProps) => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="productQR">Product QR Code</Label>
+              <Label htmlFor="productQR">Product ID</Label>
               <select
                 id="productQR"
                 value={formData.productQR}
@@ -259,8 +270,8 @@ const DistributorView = ({ userId }: DistributorViewProps) => {
               >
                 <option value="">Select product to dispatch</option>
                 {availableProducts.map((product) => (
-                  <option key={product.qrCode} value={product.qrCode}>
-                    {product.batchId} - {product.qrCode}
+                  <option key={product.id} value={product.id}>
+                    {product.batch_id} - {product.id}
                   </option>
                 ))}
               </select>
