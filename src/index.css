@@ -278,4 +278,124 @@ All colors MUST be HSL. Official government styling with earthy ayurvedic accent
   .step-progress-bar {
     @apply h-full bg-emerald-600 rounded-full transition-all duration-500;
   }
+
+  .uiverse-button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 22px;
+    width: 100%;
+    max-width: 280px;
+    min-height: 56px;
+    border: 1px solid hsl(95 22% 24%);
+    font-size: 16px;
+    background-color: hsl(95 24% 22%);
+    border-radius: 10px;
+    font-weight: 600;
+    color: hsl(45 35% 95%);
+    box-shadow: 0 10px 24px rgba(29, 42, 32, 0.18);
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .uiverse-button::before,
+  .uiverse-button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 0;
+    height: 100%;
+    transform: skew(15deg);
+    transition: all 0.5s;
+    overflow: hidden;
+    z-index: 0;
+  }
+
+  .uiverse-button::before {
+    left: -10px;
+    background: hsl(95 32% 18%);
+  }
+
+  .uiverse-button::after {
+    right: -10px;
+    background: hsl(35 52% 42%);
+  }
+
+  .uiverse-button__arr {
+    position: absolute;
+    width: 22px;
+    fill: hsl(45 35% 95%);
+    z-index: 9;
+    transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .uiverse-button__arr--right {
+    right: 18px;
+  }
+
+  .uiverse-button__arr--left {
+    left: -22%;
+  }
+
+  .uiverse-button__circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    background-color: hsl(35 52% 42%);
+    border-radius: 50%;
+    opacity: 0;
+    transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    z-index: 0;
+  }
+
+  .uiverse-button__text {
+    position: relative;
+    z-index: 1;
+    transform: translateX(-8px);
+    transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .uiverse-button:hover {
+    box-shadow: 0 12px 28px rgba(29, 42, 32, 0.22);
+    color: #ffffff;
+    border-radius: 12px;
+  }
+
+  .uiverse-button:hover::before,
+  .uiverse-button:hover::after {
+    width: 58%;
+  }
+
+  .uiverse-button:hover .uiverse-button__arr--right {
+    right: -25%;
+  }
+
+  .uiverse-button:hover .uiverse-button__arr--left {
+    left: 18px;
+  }
+
+  .uiverse-button:hover .uiverse-button__text {
+    transform: translateX(8px);
+  }
+
+  .uiverse-button:hover svg {
+    fill: #ffffff;
+  }
+
+  .uiverse-button:active {
+    scale: 0.95;
+    box-shadow: 0 8px 18px rgba(29, 42, 32, 0.18);
+  }
+
+  .uiverse-button:hover .uiverse-button__circle {
+    width: 220px;
+    height: 220px;
+    opacity: 1;
+  }
 }

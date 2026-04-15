@@ -1,5 +1,17 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  addDoc,
+  collection,
+  doc,
+  getDocs,
+  onSnapshot,
+  orderBy,
+  query,
+  updateDoc,
+  type DocumentData,
+  type QueryDocumentSnapshot,
+} from 'firebase/firestore';
+import { firestore } from '@/integrations/firebase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface Batch {
@@ -29,119 +41,176 @@ interface BatchHistory {
   created_at: string;
 }
 
+const batchesCollection = collection(firestore, 'batches');
+const batchHistoryCollection = collection(firestore, 'batch_history');
+
+const toBatch = (snapshot: QueryDocumentSnapshot<DocumentData>): Batch => {
+  const data = snapshot.data() as Partial<Batch>;
+
+  return {
+    id: snapshot.id,
+    batch_id: data.batch_id || snapshot.id,
+    type: data.type || 'raw_material',
+    status: data.status || 'created',
+    current_owner_id: data.current_owner_id || '',
+    quantity: data.quantity || 0,
+    product_name: data.product_name || '',
+    farmer_name: data.farmer_name,
+    farmer_phone: data.farmer_phone,
+    farmer_location: data.farmer_location,
+    source_location: data.source_location,
+    destination_location: data.destination_location,
+    metadata: data.metadata || {},
+    created_at: data.created_at || '',
+    updated_at: data.updated_at || data.created_at || '',
+  };
+};
+
+const toBatchHistory = (snapshot: QueryDocumentSnapshot<DocumentData>): BatchHistory => {
+  const data = snapshot.data() as Partial<BatchHistory>;
+
+  return {
+    id: snapshot.id,
+    batch_id: data.batch_id || snapshot.id,
+    event_type: data.event_type || 'unknown',
+    actor_id: data.actor_id || '',
+    details: data.details || {},
+    created_at: data.created_at || '',
+  };
+};
+
 export const useBatches = (userRole: string, userId: string) => {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [batchHistory, setBatchHistory] = useState<BatchHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchBatches = async () => {
-    try {
-      const { data, error } = await (supabase as any)
-        .from('batches')
-        .select('*')
-        .order('created_at', { ascending: false });
+  const reloadData = async () => {
+    const batchesQuery = query(batchesCollection, orderBy('created_at', 'desc'));
+    const historyQuery = query(batchHistoryCollection, orderBy('created_at', 'desc'));
 
-      if (error) throw error;
-      setBatches(data || []);
+    try {
+      const [batchSnapshot, historySnapshot] = await Promise.all([
+        getDocs(batchesQuery),
+        getDocs(historyQuery),
+      ]);
+
+      setBatches(batchSnapshot.docs.map(toBatch));
+      setBatchHistory(historySnapshot.docs.map(toBatchHistory));
     } catch (error) {
-      console.error('Error fetching batches:', error);
+      console.error('Error fetching initial batch data:', error);
       toast({
-        title: "Error",
-        description: "Failed to fetch batch data",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to fetch batch data',
+        variant: 'destructive',
       });
-    }
-  };
-
-  const fetchBatchHistory = async () => {
-    try {
-      const { data, error } = await (supabase as any)
-        .from('batch_history')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setBatchHistory(data || []);
-    } catch (error) {
-      console.error('Error fetching batch history:', error);
     }
   };
 
   useEffect(() => {
-    const initializeData = async () => {
-      setLoading(true);
-      await Promise.all([fetchBatches(), fetchBatchHistory()]);
-      setLoading(false);
-    };
+    let isMounted = true;
+    setLoading(true);
 
-    initializeData();
+    const batchesQuery = query(batchesCollection, orderBy('created_at', 'desc'));
+    const historyQuery = query(batchHistoryCollection, orderBy('created_at', 'desc'));
 
-    // Set up real-time subscriptions
-    const batchesChannel = supabase
-      .channel('batches_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'batches'
-        },
-        (payload) => {
-          console.log('Batches change received:', payload);
-          fetchBatches(); // Refetch to ensure we have latest data
+    const unsubscribeBatches = onSnapshot(
+      batchesQuery,
+      (snapshot) => {
+        if (isMounted) {
+          setBatches(snapshot.docs.map(toBatch));
         }
-      )
-      .subscribe();
+      },
+      (error) => {
+        console.error('Error fetching batches:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to fetch batch data',
+          variant: 'destructive',
+        });
+      }
+    );
 
-    const historyChannel = supabase
-      .channel('batch_history_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'batch_history'
-        },
-        (payload) => {
-          console.log('Batch history change received:', payload);
-          fetchBatchHistory();
+    const unsubscribeHistory = onSnapshot(
+      historyQuery,
+      (snapshot) => {
+        if (isMounted) {
+          setBatchHistory(snapshot.docs.map(toBatchHistory));
         }
-      )
-      .subscribe();
+      },
+      (error) => {
+        console.error('Error fetching batch history:', error);
+      }
+    );
+
+    void reloadData().finally(() => {
+      if (isMounted) {
+        setLoading(false);
+      }
+    });
 
     return () => {
-      supabase.removeChannel(batchesChannel);
-      supabase.removeChannel(historyChannel);
+      isMounted = false;
+      unsubscribeBatches();
+      unsubscribeHistory();
     };
   }, []);
 
+  const appendHistory = async (eventType: string, batchId: string, details: Record<string, any>) => {
+    await addDoc(batchHistoryCollection, {
+      batch_id: batchId,
+      event_type: eventType,
+      actor_id: userId,
+      details,
+      created_at: new Date().toISOString(),
+    });
+  };
+
   const createBatch = async (batchData: Partial<Batch>) => {
     try {
-      const { data, error } = await (supabase as any)
-        .from('batches')
-        .insert({
-          ...batchData,
-          current_owner_id: userId
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Batch created successfully",
-        variant: "default"
+      const now = new Date().toISOString();
+      const batchRef = await addDoc(batchesCollection, {
+        ...batchData,
+        current_owner_id: userId,
+        created_at: batchData.created_at || now,
+        updated_at: now,
       });
 
-      return data;
+      const createdBatch: Batch = {
+        id: batchRef.id,
+        batch_id: batchData.batch_id || batchRef.id,
+        type: batchData.type || 'raw_material',
+        status: batchData.status || 'created',
+        current_owner_id: userId,
+        quantity: batchData.quantity || 0,
+        product_name: batchData.product_name || '',
+        farmer_name: batchData.farmer_name,
+        farmer_phone: batchData.farmer_phone,
+        farmer_location: batchData.farmer_location,
+        source_location: batchData.source_location,
+        destination_location: batchData.destination_location,
+        metadata: batchData.metadata || {},
+        created_at: batchData.created_at || now,
+        updated_at: now,
+      };
+
+      await appendHistory('created', createdBatch.batch_id, {
+        batch: createdBatch,
+      });
+
+      toast({
+        title: 'Success',
+        description: 'Batch created successfully',
+        variant: 'default',
+      });
+
+      return createdBatch;
     } catch (error) {
       console.error('Error creating batch:', error);
       toast({
-        title: "Error",
-        description: "Failed to create batch",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to create batch',
+        variant: 'destructive',
       });
       throw error;
     }
@@ -149,28 +218,35 @@ export const useBatches = (userRole: string, userId: string) => {
 
   const updateBatch = async (batchId: string, updates: Partial<Batch>) => {
     try {
-      const { data, error } = await (supabase as any)
-        .from('batches')
-        .update(updates)
-        .eq('id', batchId)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Batch updated successfully",
-        variant: "default"
+      const now = new Date().toISOString();
+      await updateDoc(doc(firestore, 'batches', batchId), {
+        ...updates,
+        updated_at: now,
       });
 
-      return data;
+      const updatedBatch = batches.find((batch) => batch.id === batchId);
+      await appendHistory('updated', updatedBatch?.batch_id || batchId, {
+        batchId,
+        updates,
+      });
+
+      toast({
+        title: 'Success',
+        description: 'Batch updated successfully',
+        variant: 'default',
+      });
+
+      return {
+        ...updatedBatch,
+        ...updates,
+        updated_at: now,
+      } as Batch;
     } catch (error) {
       console.error('Error updating batch:', error);
       toast({
-        title: "Error",
-        description: "Failed to update batch",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to update batch',
+        variant: 'destructive',
       });
       throw error;
     }
@@ -178,33 +254,41 @@ export const useBatches = (userRole: string, userId: string) => {
 
   const transferBatch = async (batchId: string, newOwnerId: string, newStatus?: string) => {
     try {
-      const updates: any = { current_owner_id: newOwnerId };
+      const updates: Record<string, any> = { current_owner_id: newOwnerId };
       if (newStatus) {
         updates.status = newStatus;
       }
 
-      const { data, error } = await (supabase as any)
-        .from('batches')
-        .update(updates)
-        .eq('id', batchId)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Batch transferred successfully",
-        variant: "default"
+      const now = new Date().toISOString();
+      await updateDoc(doc(firestore, 'batches', batchId), {
+        ...updates,
+        updated_at: now,
       });
 
-      return data;
+      const transferredBatch = batches.find((batch) => batch.id === batchId);
+      await appendHistory('transferred', transferredBatch?.batch_id || batchId, {
+        batchId,
+        newOwnerId,
+        newStatus,
+      });
+
+      toast({
+        title: 'Success',
+        description: 'Batch transferred successfully',
+        variant: 'default',
+      });
+
+      return {
+        ...transferredBatch,
+        ...updates,
+        updated_at: now,
+      } as Batch;
     } catch (error) {
       console.error('Error transferring batch:', error);
       toast({
-        title: "Error",
-        description: "Failed to transfer batch",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to transfer batch',
+        variant: 'destructive',
       });
       throw error;
     }
@@ -253,9 +337,6 @@ export const useBatches = (userRole: string, userId: string) => {
     createBatch,
     updateBatch,
     transferBatch,
-    refetch: () => {
-      fetchBatches();
-      fetchBatchHistory();
-    }
+    refetch: () => reloadData(),
   };
 };
