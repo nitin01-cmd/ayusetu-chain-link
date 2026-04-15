@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import FarmerDetailsDialog from '@/components/FarmerDetailsDialog';
+import CreateBatchForFarmerComponent from '@/components/CreateBatchForFarmerComponent';
 import { useBatches } from '@/hooks/useBatches';
 
 interface AggregatorViewProps {
@@ -215,7 +216,17 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
       </div>
 
       {/* Action Buttons */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <Button 
+          onClick={() => setActiveForm('createBatchForFarmer')}
+          className="btn-government h-auto p-6 flex flex-col items-center space-y-2 bg-green-700 hover:bg-green-800"
+        >
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          <span>New Batch For Farmer</span>
+        </Button>
+
         <Button 
           onClick={() => setActiveForm('receive')}
           className="btn-government h-auto p-6 flex flex-col items-center space-y-2"
@@ -688,6 +699,19 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
             </Button>
           </div>
         </Card>
+      )}
+
+      {activeForm === 'createBatchForFarmer' && (
+        <div>
+          <CreateBatchForFarmerComponent 
+            collectorName="Current Collector" // In real app, fetch from user data
+            collectorId={userId}
+            onBatchCreated={(batchId, farmerId) => {
+              console.log('Batch created:', batchId, 'for farmer:', farmerId);
+              setActiveForm(null);
+            }}
+          />
+        </div>
       )}
     </div>
   );

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,8 +7,6 @@
 /* AyuSetu Government Design System - Ayurvedic Theme
 All colors MUST be HSL. Official government styling with earthy ayurvedic accents.
 */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -191,8 +191,57 @@ All colors MUST be HSL. Official government styling with earthy ayurvedic accent
     to { opacity: 1; transform: translateY(0); }
   }
 
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
   .animate-fade-in {
     animation: fadeIn 0.3s ease-out;
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.4s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
+  }
+
+  .animate-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  /* OTP Input Styles */
+  .otp-input {
+    @apply w-10 sm:w-12 h-12 sm:h-14 text-center text-lg sm:text-2xl font-bold rounded-lg border-2 border-gray-300 transition-all duration-200;
+  }
+
+  .otp-input:focus {
+    @apply border-emerald-600 ring-2 ring-emerald-500 ring-offset-2;
+  }
+
+  /* Role Card Hover Effects */
+  .role-card {
+    @apply relative p-4 text-left rounded-lg border-2 border-gray-200 bg-white transition-all duration-200 cursor-pointer;
+  }
+
+  .role-card:hover {
+    @apply border-emerald-500 bg-emerald-50 shadow-md;
+  }
+
+  .role-card:focus {
+    @apply ring-2 ring-emerald-500 ring-offset-2 outline-none;
   }
 
   /* Government Tables */
@@ -206,5 +255,27 @@ All colors MUST be HSL. Official government styling with earthy ayurvedic accent
 
   .gov-table td {
     @apply px-4 py-3 border-t border-border;
+  }
+
+  /* Login Page Specific Styles */
+  .login-container {
+    @apply min-h-screen flex flex-col lg:flex-row bg-gradient-to-br from-amber-50 via-green-50 to-green-100;
+  }
+
+  .login-branding {
+    @apply hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-gradient-to-br from-emerald-900 via-amber-900 to-green-900 text-white relative overflow-hidden;
+  }
+
+  .login-panel {
+    @apply flex-1 flex items-center justify-center p-4 sm:p-8 lg:p-12;
+  }
+
+  /* Step Progress Bar Animation */
+  .step-progress {
+    @apply h-1 w-full bg-gray-200 rounded-full overflow-hidden;
+  }
+
+  .step-progress-bar {
+    @apply h-full bg-emerald-600 rounded-full transition-all duration-500;
   }
 }
