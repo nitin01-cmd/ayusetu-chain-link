@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import FarmerDetailsDialog from '@/components/FarmerDetailsDialog';
 import { useBatches } from '@/hooks/useBatches';
@@ -117,17 +117,17 @@ const DistributorView = ({ userId }: DistributorViewProps) => {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black text-emerald-950 tracking-tight">Distributor Hub</h2>
-          <p className="text-emerald-700/80 font-medium tracking-wide mt-1">Manage global product dispatch and logistics tracking operations</p>
+          <h2 className="text-2xl sm:text-3xl font-black text-emerald-950 tracking-tight">Distributor Hub</h2>
+          <p className="text-sm sm:text-base text-emerald-700/80 font-medium tracking-wide mt-1">Global supply chain & logistics node</p>
         </div>
-        <div className="flex space-x-4">
+        <div className="flex flex-wrap gap-2">
           <Badge className="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border-emerald-200 px-4 py-1.5 rounded-xl font-bold uppercase tracking-widest shadow-sm">
-            Ready for Dispatch: {batches.filter(b => b.type === 'final_product' && b.status === 'finalized').length}
+            Ready: {batches.filter(b => b.type === 'final_product' && b.status === 'finalized').length}
           </Badge>
           <Badge className="bg-teal-100 hover:bg-teal-200 text-teal-800 border-teal-200 px-4 py-1.5 rounded-xl font-bold uppercase tracking-widest shadow-sm">
-            Active Shipments: {batches.filter(b => b.status === 'dispatched').length}
+            Active: {batches.filter(b => b.status === 'dispatched').length}
           </Badge>
         </div>
       </div>
@@ -247,7 +247,7 @@ const DistributorView = ({ userId }: DistributorViewProps) => {
 
       {/* Dialog Modals */}
       <Dialog open={activeForm === 'dispatch'} onOpenChange={(open) => !open && setActiveForm(null)}>
-        <DialogContent className="sm:max-w-2xl bg-white/95 backdrop-blur-2xl border border-emerald-200/60 rounded-[2rem] p-0 overflow-y-auto max-h-[90vh] shadow-2xl">
+        <DialogContent className="sm:max-w-2xl bg-white/95 backdrop-blur-2xl border border-emerald-200/60 rounded-[2rem] p-0 overflow-hidden max-h-[90vh] shadow-2xl flex flex-col">
           <div className="bg-gradient-to-br from-emerald-50 to-teal-50 px-8 py-6 border-b border-emerald-100 sticky top-0 z-10">
             <DialogHeader>
               <DialogTitle className="text-xl font-black text-emerald-950 flex items-center gap-3">
@@ -256,9 +256,12 @@ const DistributorView = ({ userId }: DistributorViewProps) => {
                 </div>
                 Assign Shipment to Logistics
               </DialogTitle>
+              <DialogDescription className="text-emerald-600/70 font-bold text-[10px] uppercase tracking-widest pl-14 -mt-1">
+                Authorizing product release to global transit networks
+              </DialogDescription>
             </DialogHeader>
           </div>
-          <div className="p-8">
+          <div className="p-8 flex-1 overflow-y-auto min-h-0 overscroll-contain">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="md:col-span-2">
                 <Label htmlFor="productQR" className="text-sm font-bold text-emerald-950 ml-1">Target Product *</Label>

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import FarmerDetailsDialog from '@/components/FarmerDetailsDialog';
 import { useBatches } from '@/hooks/useBatches';
@@ -134,17 +134,17 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black text-emerald-950 tracking-tight">Manufacturer Hub</h2>
-          <p className="text-emerald-700/80 font-medium tracking-wide mt-1">Create final products, generate QRs, and manage quality control</p>
+          <h2 className="text-2xl sm:text-3xl font-black text-emerald-950 tracking-tight">Manufacturer Hub</h2>
+          <p className="text-sm sm:text-base text-emerald-700/80 font-medium tracking-wide mt-1">Formulation & final branding engine</p>
         </div>
-        <div className="flex space-x-4">
+        <div className="flex flex-wrap gap-2">
           <Badge className="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border-emerald-200 px-4 py-1.5 rounded-xl font-bold uppercase tracking-widest shadow-sm">
-            Available: {batches.filter(b => b.type === 'processed' && b.status !== 'finalized').length}
+            Ready: {batches.filter(b => b.type === 'processed' && b.status !== 'finalized').length}
           </Badge>
           <Badge className="bg-teal-100 hover:bg-teal-200 text-teal-800 border-teal-200 px-4 py-1.5 rounded-xl font-bold uppercase tracking-widest shadow-sm">
-            Final Products: {batches.filter(b => b.type === 'final_product').length}
+            Products: {batches.filter(b => b.type === 'final_product').length}
           </Badge>
         </div>
       </div>
@@ -288,7 +288,7 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
 
       {/* Dialog Modals */}
       <Dialog open={activeForm === 'createProduct'} onOpenChange={(open) => !open && setActiveForm(null)}>
-        <DialogContent className="sm:max-w-xl bg-white/95 backdrop-blur-2xl border border-emerald-200/60 rounded-[2rem] p-0 overflow-hidden shadow-2xl">
+        <DialogContent className="sm:max-w-xl bg-white/95 backdrop-blur-2xl border border-emerald-200/60 rounded-[2rem] p-0 overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
           <div className="bg-gradient-to-br from-emerald-50 to-teal-50 px-8 py-6 border-b border-emerald-100">
             <DialogHeader>
               <DialogTitle className="text-xl font-black text-emerald-950 flex items-center gap-3">
@@ -297,9 +297,12 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
                 </div>
                 Create Final Product
               </DialogTitle>
+              <DialogDescription className="text-emerald-700/60 text-sm">
+                Select processed batches to finalize into a retail product.
+              </DialogDescription>
             </DialogHeader>
           </div>
-          <div className="p-8">
+          <div className="p-8 flex-1 overflow-y-auto min-h-0 overscroll-contain">
             <div className="space-y-6">
               <div>
                 <Label className="text-sm font-bold text-emerald-950">Select Input Processing Batches</Label>

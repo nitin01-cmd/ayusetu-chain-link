@@ -12,7 +12,7 @@ import { firestore } from '@/integrations/firebase/client';
 const queryClient = new QueryClient();
 
 const App = () => {
-  console.log("App loaded");
+
 
   // Automated Mock DB Seeder
   useEffect(() => {
@@ -24,14 +24,10 @@ const App = () => {
         if (snapshotFarmers.empty) {
           console.log("Seeding Farmers...");
           const farmers = [
-            { id: 'FARM-001', aadharId: '1001 2002 3003', fullName: 'Rajesh Kumar', mobile: '9876543210', location: 'Aurangabad, Maharashtra', farmerType: 'farmer', createdAt: new Date() },
-            { id: 'FARM-002', aadharId: '1001 2002 3004', fullName: 'Suresh Patil', mobile: '9876543211', location: 'Pune, Maharashtra', farmerType: 'farmer', createdAt: new Date() },
-            { id: 'FARM-003', aadharId: '1001 2002 3005', fullName: 'Amit Sharma', mobile: '9876543212', location: 'Nashik, Maharashtra', farmerType: 'collector', createdAt: new Date() },
-            { id: 'FARM-004', aadharId: '1001 2002 3006', fullName: 'Vikram Singh', mobile: '9876543213', location: 'Nagpur, Maharashtra', farmerType: 'farmer', createdAt: new Date() },
-            { id: 'FARM-005', aadharId: '1001 2002 3007', fullName: 'Anil Deshmukh', mobile: '9876543214', location: 'Kolhapur, Maharashtra', farmerType: 'collector', createdAt: new Date() },
-            { id: 'FARM-006', aadharId: '1001 2002 3008', fullName: 'Bhavna Yadav', mobile: '9876543215', location: 'Solapur, Maharashtra', farmerType: 'farmer', createdAt: new Date() },
-            { id: 'FARM-007', aadharId: '1001 2002 3009', fullName: 'Kavita Shinde', mobile: '9876543216', location: 'Sillod, Maharashtra', farmerType: 'farmer', createdAt: new Date() },
-            { id: 'FARM-008', aadharId: '1001 2002 3010', fullName: 'Ramesh Pawar', mobile: '9876543217', location: 'Satara, Maharashtra', farmerType: 'collector', createdAt: new Date() }
+            { id: 'FARM-001', aadharId: '1001 2002 3003', fullName: 'Rajesh Kumar Sharma', mobile: '9876543210', location: 'Aurangabad, Maharashtra', farmerType: 'farmer', farmSize: '2.5 acres', certificationStatus: 'Organic Certified', cropTypes: ['Ashwagandha', 'Brahmi'], complianceScore: 95, bankAccount: 'XXXX-4521', createdAt: new Date() },
+            { id: 'FARM-002', aadharId: '1001 2002 3004', fullName: 'Suresh Patil', mobile: '9876543211', location: 'Pune, Maharashtra', farmerType: 'farmer', farmSize: '1.8 acres', certificationStatus: 'GAP Certified', cropTypes: ['Tulsi', 'Neem'], complianceScore: 88, bankAccount: 'XXXX-7890', createdAt: new Date() },
+            { id: 'FARM-003', aadharId: '1001 2002 3005', fullName: 'Amit Sharma', mobile: '9876543212', location: 'Nashik, Maharashtra', farmerType: 'collector', farmSize: '3.2 acres', certificationStatus: 'Organic', cropTypes: ['Shatavari', 'Amla'], complianceScore: 92, bankAccount: 'XXXX-2468', createdAt: new Date() },
+            { id: 'FARM-004', aadharId: '1001 2002 3006', fullName: 'Vikram Singh', mobile: '9876543213', location: 'Nagpur, Maharashtra', farmerType: 'farmer', farmSize: '4.5 acres', certificationStatus: 'Fair Trade', cropTypes: ['Giloy', 'Triphala'], complianceScore: 90, bankAccount: 'XXXX-1234', createdAt: new Date() }
           ];
           for (const farmer of farmers) {
             await addDoc(collection(firestore, 'farmers'), farmer);
@@ -59,6 +55,65 @@ const App = () => {
           }
           console.log("Database successfully seeded with 8 Demo Business Nodes.");
         }
+
+        // 3. Seed Demo Batches
+        const qBatches = query(collection(firestore, 'batches'), limit(1));
+        const snapshotBatches = await getDocs(qBatches);
+        if (snapshotBatches.empty) {
+          console.log("Seeding Demo Batches...");
+          const demoBatches = [
+            { 
+              batch_id: 'BATCH-001', 
+              type: 'batch', 
+              status: 'received', 
+              creator_id: 'AGG-1001', 
+              current_owner_id: 'AGG-1001', 
+              quantity: '500kg', 
+              herb_name: 'Ashwagandha', 
+              created_at: new Date().toISOString(),
+              metadata: { condition: 'Premium', moisture: '8%' }
+            },
+            { 
+              batch_id: 'PROC-B-99', 
+              type: 'processed', 
+              status: 'verified', 
+              creator_id: 'PROC-2001', 
+              current_owner_id: 'PROC-2001', 
+              quantity: '150kg', 
+              herb_name: 'Brahmi Extract', 
+              created_at: new Date().toISOString(),
+              metadata: { 
+                operation: 'Extractions', 
+                temperature: '65', 
+                duration: '12', 
+                qualityTest: { 
+                  testType: 'AYUSH Premium', 
+                  results: 'PASSED', 
+                  authority: 'Central Lab', 
+                  timestamp: new Date().toISOString() 
+                } 
+              }
+            },
+            { 
+              batch_id: 'LOT-505', 
+              type: 'lot', 
+              status: 'dispatched', 
+              creator_id: 'AGG-1001', 
+              current_owner_id: 'PROC-2001', 
+              quantity: '1200kg', 
+              herb_name: 'Tulsi Leaves', 
+              created_at: new Date().toISOString(),
+              metadata: { 
+                waybill: 'WB-78891', 
+                vehicle: 'MH-12-AS-9080' 
+              }
+            }
+          ];
+          for (const batch of demoBatches) {
+            await addDoc(collection(firestore, 'batches'), batch);
+          }
+          console.log("Demo batches successfully seeded.");
+        }
       } catch(e) {
         console.error("Firebase Seeding failed (Make sure your config is valid):", e);
       }
@@ -71,7 +126,7 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
             <Route path="/" element={<Index />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

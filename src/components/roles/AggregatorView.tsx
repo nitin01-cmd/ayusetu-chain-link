@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import FarmerDetailsDialog from '@/components/FarmerDetailsDialog';
 import CreateBatchForFarmerComponent from '@/components/CreateBatchForFarmerComponent';
@@ -207,10 +207,10 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black text-emerald-950 tracking-tight">Aggregator Hub</h2>
-          <p className="text-emerald-700/80 font-medium tracking-wide mt-1">Manage raw material collection and logistics</p>
+          <h2 className="text-2xl sm:text-3xl font-black text-emerald-950 tracking-tight">Aggregator Hub</h2>
+          <p className="text-sm sm:text-base text-emerald-700/80 font-medium tracking-wide mt-1">Manage raw material collection and logistics</p>
         </div>
         <Badge className="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border-emerald-200 px-4 py-1.5 rounded-xl font-bold uppercase tracking-widest shadow-sm">
           Active Collections: {batches.length}
@@ -649,13 +649,14 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
 
       <Dialog open={activeForm === 'createBatchForFarmer'} onOpenChange={(open) => !open && setActiveForm(null)}>
         <DialogContent className="sm:max-w-4xl bg-white/95 backdrop-blur-2xl border border-emerald-200/60 rounded-[2.5rem] p-0 overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto min-h-0 overscroll-contain">
             <CreateBatchForFarmerComponent 
               collectorName="Senior Field Aggregator"
               collectorId={userId}
               onBatchCreated={(batchId, farmerId) => {
-                setActiveForm(null);
+                // Keep dialog open to show the success screen
               }}
+              onClose={() => setActiveForm(null)}
             />
           </div>
         </DialogContent>

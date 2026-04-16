@@ -16,13 +16,19 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import ayusetuEmblem from '@/assets/ayusetu-emblem.png';
 import ayuestufrontpage from '@/assets/ayuestufrontpage.png';
-import { ChevronRight, Lock, Check, Heart, Loader2, ChevronDown, Eye, EyeOff } from 'lucide-react';
+import { collection, addDoc, setDoc, doc, getDoc } from 'firebase/firestore';
+import { firestore } from '@/integrations/firebase/client';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  ChevronRight, Lock, Check, Heart, Loader2, ChevronDown, Eye, EyeOff,
+  FileDown, QrCode, ShieldCheck as ShieldIcon, User 
+} from 'lucide-react';
 
 interface AuthComponentProps {
   onLogin: (role: string, userId: string) => void;
 }
 
-type AuthStep = 'role-selection' | 'credentials-entry' | 'otp-verification';
+type AuthStep = 'role-selection' | 'credentials-entry' | 'otp-verification' | 'registration-success';
 
 interface RoleCard {
   id: string;
@@ -103,6 +109,7 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
   const [hasStarted, setHasStarted] = useState(false);
   const [step, setStep] = useState<AuthStep>('role-selection');
   const [selectedRole, setSelectedRole] = useState<string>('');
+  const [farmerTab, setFarmerTab] = useState<'new' | 'search'>('new');
   const [credentials, setCredentials] = useState<CredentialsState>({
     fullName: '',
     location: '',
@@ -386,14 +393,46 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
   };
 
   // Handlers for OTP and Login
-  const handleVerifyOtp = () => {
+  const handleVerifyOtp = async () => {
     const otp = otpDigits.join('');
     if (otp === '111111') {
       setIsFinalizing(true);
-      setTimeout(() => {
-        setIsFinalizing(false);
-        onLogin(selectedRole, credentials.aggregatorId || credentials.organizationId || credentials.distributorId || 'MOCK_ID');
-      }, 1000);
+      
+      if (selectedRole === 'farmer') {
+        try {
+          // 1. Generate new Farmer ID
+          const newId = `FARM-${Math.floor(Math.random() * 900000 + 100000)}`;
+          setCredentials(prev => ({ ...prev, aggregatorId: newId })); // Store in a field to display later
+
+          // 2. Persist to Firestore
+          await setDoc(doc(firestore, 'farmers', newId), {
+            id: newId,
+            fullName: credentials.fullName,
+            mobile: credentials.mobile,
+            location: credentials.location,
+            pincode: credentials.pincode,
+            type: credentials.farmerType,
+            created_at: new Date().toISOString(),
+            farmSize: "Assigned after verification",
+            certificationStatus: "Identity Approved",
+            complianceScore: 100
+          });
+
+          setTimeout(() => {
+            setIsFinalizing(false);
+            setStep('registration-success');
+          }, 1200);
+        } catch (e) {
+          console.error("Registration error:", e);
+          toast({ title: "Registration Failed", description: "Database sync timed out.", variant: "destructive" });
+          setIsFinalizing(false);
+        }
+      } else {
+        setTimeout(() => {
+          setIsFinalizing(false);
+          onLogin(selectedRole, credentials.aggregatorId || credentials.organizationId || credentials.distributorId || 'MOCK_ID');
+        }, 1000);
+      }
     } else {
       toast({ title: "Invalid OTP", description: "Hint: Use demo OTP 111111", variant: "destructive" });
     }
@@ -415,6 +454,115 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
       otpInputRefs.current[index - 1]?.focus();
     }
   };
+
+  if (step === 'registration-success') {
+    return (
+      <div className="h-screen bg-[#f8faf9] flex items-center justify-center p-2 sm:p-4 overflow-hidden relative">
+        {/* Anti-scroll Background lock */}
+        <style dangerouslySetInnerHTML={{ __html: `body { overflow: hidden !important; }` }} />
+
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          id="printable-card"
+          className="max-w-md sm:max-w-xl w-full bg-white border-2 border-emerald-950 rounded-[2.5rem] shadow-[0_35px_60px_-15px_rgba(6,78,59,0.3)] overflow-hidden relative scale-[0.9] sm:scale-100"
+        >
+          {/* Certificate Header */}
+          <div className="bg-emerald-950 p-8 text-center text-white relative">
+             <motion.div 
+               initial={{ scale: 0 }}
+               animate={{ scale: 1 }}
+               transition={{ type: "spring", damping: 10, delay: 0.2 }}
+               className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center mx-auto mb-4 backdrop-blur-xl"
+             >
+               <ShieldIcon size={32} className="text-emerald-400" />
+             </motion.div>
+             <h1 className="text-3xl font-black tracking-tighter">REGISTRY COMPLETE</h1>
+             <p className="text-emerald-400 text-[10px] uppercase font-black mt-2 tracking-[0.3em]">Official Farmer Identity</p>
+          </div>
+
+          <div className="p-6 sm:p-10 space-y-6">
+             {/* ID Display Area */}
+             <div className="bg-white p-6 rounded-[2rem] border-2 border-emerald-100 shadow-sm relative group">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-2">Farmer Access Pin</p>
+                    <p className="text-4xl font-mono font-black text-emerald-950 tracking-tighter">{credentials.aggregatorId}</p>
+                  </div>
+                  <QrCode size={48} className="text-emerald-100" />
+                </div>
+                <div className="absolute left-0 top-0 w-1.5 h-full bg-emerald-600"></div>
+             </div>
+
+             {/* Personal Details Table */}
+             <div className="space-y-3">
+                <div className="flex justify-between items-center py-2 border-b border-emerald-50">
+                  <span className="text-[10px] font-black text-emerald-800/60 uppercase">Full Name</span>
+                  <span className="text-sm font-bold text-emerald-950">{credentials.fullName}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-emerald-50">
+                  <span className="text-[10px] font-black text-emerald-800/60 uppercase">Mobile Number</span>
+                  <span className="text-sm font-bold text-emerald-950">{credentials.mobile}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-emerald-50">
+                  <span className="text-[10px] font-black text-emerald-800/60 uppercase">Region</span>
+                  <span className="text-sm font-bold text-emerald-950">{credentials.location} ({credentials.pincode})</span>
+                </div>
+             </div>
+
+             {/* Action Buttons */}
+             <div className="flex flex-col sm:flex-row gap-3 no-print pt-2">
+                <Button 
+                  onClick={() => window.print()} 
+                  className="flex-1 h-14 bg-slate-900 border-none rounded-2xl text-white font-black text-[10px] tracking-widest hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+                >
+                  <FileDown size={16} />
+                  SAVE IDENTITY CARD
+                </Button>
+                <Button 
+                  onClick={() => onLogin('farmer', credentials.aggregatorId)} 
+                  className="flex-1 h-14 bg-emerald-600 border-none rounded-2xl text-white font-black text-[10px] tracking-widest hover:bg-emerald-700 shadow-xl shadow-emerald-500/20"
+                >
+                  ENTER TERMINAL
+                </Button>
+             </div>
+
+             <div className="text-center pt-4">
+                <p className="text-[8px] font-bold text-emerald-900/30 uppercase tracking-[0.3em]">Authorized by Ministry of AYUSH • Global Traceability Node</p>
+             </div>
+          </div>
+          
+          <style dangerouslySetInnerHTML={{ __html: `
+            @media print {
+              @page { margin: 0; size: auto; }
+              body { background: white !important; margin: 0 !important; padding: 0 !important; }
+              body * { visibility: hidden; }
+              #printable-card, #printable-card * { visibility: visible; }
+              #printable-card { 
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 100vw;
+                height: 100vh;
+                margin: 0;
+                padding: 40px;
+                border: none;
+                box-shadow: none;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                background: white !important;
+                scale: 1 !important;
+                transform: none !important;
+                border-radius: 0 !important;
+              }
+              .no-print { display: none !important; }
+            }
+          `}} />
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -460,10 +608,11 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
         </div>
 
         {/* Right Panel (60%) */}
-        <div className="w-full lg:w-[60%] flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-24 overflow-y-auto">
+        <div className="w-full lg:w-[60%] flex flex-col justify-center px-6 py-4 sm:px-12 lg:px-24 overflow-hidden">
 
           {!hasStarted ? (
             <div className="w-full max-w-2xl mx-auto flex flex-col justify-center min-h-[60vh] animate-in fade-in slide-in-from-bottom-8 duration-700">
+
               <div className="space-y-6">
                 <h2 className="text-6xl lg:text-7xl xl:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-emerald-950 via-emerald-800 to-emerald-500 pb-4">
                   Welcome to<br />AyuSetu.
@@ -489,7 +638,7 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
               </div>
             </div>
           ) : (
-            <div className="w-full max-w-md mx-auto space-y-8">
+            <div className="w-full max-w-md mx-auto space-y-4">
               {step === 'role-selection' && (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="text-center lg:text-left mb-8">
@@ -519,132 +668,197 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
               )}
 
               {step === 'credentials-entry' && selectedRole && (
-                <div className="animate-in slide-in-from-right-8 duration-500">
+                <div className="animate-in slide-in-from-right-8 duration-500 max-h-full flex flex-col justify-center">
                   <button
                     onClick={() => setStep('role-selection')}
-                    className="text-emerald-600 hover:text-emerald-700 text-sm font-medium mb-6 flex items-center transition-colors"
+                    className="text-emerald-600 hover:text-emerald-700 text-[10px] font-bold uppercase tracking-widest mb-4 flex items-center transition-colors"
                   >
-                    ← Back to roles
+                    ← BACK
                   </button>
 
-                  <div className="mb-8">
-                    <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-3xl mb-4 border border-emerald-100">
+                  <div className="mb-6 flex items-center gap-4">
+                    <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-2xl border border-emerald-100 shrink-0">
                       {getRoleConfig(selectedRole)?.icon}
                     </div>
-                    <h2 className="text-2xl font-bold text-emerald-950">
+                    <h2 className="text-xl font-bold text-emerald-950">
                       {getRoleConfig(selectedRole)?.loginLabel}
                     </h2>
                   </div>
 
-                  <div className="space-y-6">
-                    <div className={selectedRole === 'farmer' ? "grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-5" : "space-y-5"}>
-                      {getRoleConfig(selectedRole)?.fields.map(field => field !== 'otp' && (
-                        <div key={field} className={selectedRole === 'farmer' && ['fullName', 'location'].includes(field) ? 'sm:col-span-2' : ''}>
-                          <label className="block text-sm font-medium text-emerald-900 mb-1.5 ml-1">
-                            {getFieldLabel(field)}
+                  {selectedRole === 'farmer' && (
+                    <div className="flex gap-2 p-1 bg-emerald-50/50 rounded-xl mb-4 border border-emerald-100/50">
+                      <button 
+                        onClick={() => setFarmerTab('new')}
+                        className={`flex-1 py-2 rounded-lg text-[9px] font-black tracking-widest transition-all ${farmerTab === 'new' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/10' : 'text-emerald-900/40 hover:text-emerald-900'}`}
+                      >
+                         NEW REGISTRY
+                      </button>
+                      <button 
+                         onClick={() => setFarmerTab('search')}
+                         className={`flex-1 py-2 rounded-lg text-[9px] font-black tracking-widest transition-all ${farmerTab === 'search' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/10' : 'text-emerald-900/40 hover:text-emerald-900'}`}
+                      >
+                         IDENTITY SEEKER
+                      </button>
+                    </div>
+                  )}
+
+                  {selectedRole === 'farmer' && farmerTab === 'search' ? (
+                    <div className="space-y-6">
+                       <div className="bg-white p-6 rounded-3xl border-2 border-dashed border-emerald-200">
+                          <label className="block text-xs font-black text-emerald-900/40 uppercase tracking-widest mb-3 ml-1">
+                             Enter Identity Access PIN
                           </label>
-                          {field === 'farmerType' ? (
-                            <div className="relative">
-                              <select
-                                className="w-full px-4 py-3 rounded-xl border border-emerald-200/60 bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm appearance-none outline-none text-emerald-950 font-medium"
-                                value={credentials[field as keyof CredentialsState] as string}
-                                onChange={(e) => handleCredentialChange(field, e.target.value)}
-                              >
-                                <option value="farmer">Farmer</option>
-                                <option value="collector">Collector</option>
-                              </select>
-                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-emerald-600">
-                                <ChevronDown className="w-5 h-5" />
+                          <div className="flex gap-3">
+                             <input 
+                               type="text"
+                               placeholder="e.g. FARM-123456"
+                               value={credentials.aggregatorId}
+                               onChange={(e) => setCredentials(prev => ({ ...prev, aggregatorId: e.target.value.toUpperCase() }))}
+                               className="flex-1 h-14 px-5 rounded-2xl bg-emerald-50/30 border-2 border-emerald-100 font-mono font-bold text-emerald-700 outline-none focus:border-emerald-500 transition-all"
+                             />
+                             <Button 
+                               onClick={async () => {
+                                 const docRef = doc(firestore, 'farmers', credentials.aggregatorId || '');
+                                 const docSnap = await getDoc(docRef);
+                                 if (docSnap.exists()) {
+                                   const data = docSnap.data();
+                                   setCredentials({
+                                     ...credentials,
+                                     fullName: data.fullName,
+                                     mobile: data.mobile,
+                                     location: data.location,
+                                     pincode: data.pincode,
+                                     farmerType: data.type || 'farmer'
+                                   });
+                                   setFarmerTab('new'); // Switch to view/edit their details
+                                   toast({ title: "Profile Located", description: "Identity verified in global registry." });
+                                 } else {
+                                   toast({ title: "PIN Not Found", description: "No record matches this identity.", variant: "destructive" });
+                                 }
+                               }}
+                               className="h-14 px-6 bg-emerald-950 text-white rounded-2xl font-black text-[10px] tracking-widest"
+                             >
+                               FIND
+                             </Button>
+                          </div>
+                          <p className="text-[10px] text-emerald-600/60 font-medium mt-4 leading-relaxed">
+                            Looking for your existing registry profile? Enter the ID from your identity card above.
+                          </p>
+                       </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className={selectedRole === 'farmer' ? "grid grid-cols-2 gap-x-3 gap-y-3" : "space-y-4"}>
+                        {getRoleConfig(selectedRole)?.fields.map(field => field !== 'otp' && (
+                          <div key={field} className={selectedRole === 'farmer' && ['fullName', 'location'].includes(field) ? 'col-span-2' : ''}>
+                            <label className="block text-[10px] font-bold text-emerald-900 mb-1 ml-1">
+                              {getFieldLabel(field)}
+                            </label>
+                            {field === 'farmerType' ? (
+                              <div className="relative">
+                                <select
+                                  className="w-full px-4 py-2.5 rounded-xl border border-emerald-200/60 bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm appearance-none outline-none text-emerald-950 font-medium text-sm"
+                                  value={credentials[field as keyof CredentialsState] as string}
+                                  onChange={(e) => handleCredentialChange(field, e.target.value)}
+                                >
+                                  <option value="farmer">Farmer</option>
+                                  <option value="collector">Collector</option>
+                                </select>
+                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-emerald-600">
+                                  <ChevronDown className="w-5 h-5" />
+                                </div>
                               </div>
-                            </div>
-                          ) : field === 'aadharId' ? (
-                            <input
-                              type="text"
-                              maxLength={14}
-                              className="w-full px-4 py-3 rounded-xl border border-emerald-200/60 bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm tracking-widest text-emerald-950 font-medium"
-                              placeholder="XXXX XXXX XXXX"
-                              value={credentials[field as keyof CredentialsState] as string}
-                              onChange={(e) => {
-                                const val = e.target.value.replace(/\D/g, '');
-                                let formatted = val;
-                                if (val.length > 0) {
-                                  formatted = val.match(/.{1,4}/g)?.join(' ') || val;
-                                }
-                                if (formatted.length <= 14) handleCredentialChange(field, formatted);
-                              }}
-                            />
-                          ) : field === 'pincode' ? (
-                            <div className="relative">
+                            ) : field === 'aadharId' ? (
                               <input
                                 type="text"
-                                maxLength={6}
-                                className="w-full px-4 py-3 rounded-xl border border-emerald-200/60 bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm tracking-widest text-emerald-950 font-medium pr-20"
-                                placeholder="6-digit Pincode"
+                                maxLength={14}
+                                className="w-full px-3 py-2.5 rounded-xl border border-emerald-200/60 bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm tracking-widest text-emerald-950 font-medium text-sm"
+                                placeholder="XXXX XXXX XXXX"
                                 value={credentials[field as keyof CredentialsState] as string}
                                 onChange={(e) => {
                                   const val = e.target.value.replace(/\D/g, '');
-                                  if (val.length <= 6) handlePincodeUpdate(val);
-                                }}
-                              />
-                              <button
-                                onClick={() => checkPincodeAPI(credentials.pincode as string)}
-                                disabled={(credentials.pincode || '').length !== 6}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-100 hover:bg-emerald-200 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                Check
-                              </button>
-                            </div>
-                          ) : field === 'mobile' ? (
-                            <div className="flex rounded-xl border border-emerald-200/60 bg-white focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition-all shadow-sm overflow-hidden">
-                              <span className="flex items-center px-4 bg-emerald-50 border-r border-emerald-100 text-emerald-800 font-medium select-none">
-                                +91
-                              </span>
-                              <input
-                                type="tel"
-                                maxLength={10}
-                                className="w-full px-4 py-3 bg-transparent outline-none"
-                                placeholder="Enter 10-digit number"
-                                value={credentials[field as keyof CredentialsState] as string}
-                                onChange={(e) => {
-                                  const val = e.target.value.replace(/\D/g, '');
-                                  if (val.length <= 10) handleCredentialChange(field, val);
-                                }}
-                              />
-                            </div>
-                          ) : (
-                            <div className="relative">
-                              <input
-                                type={field === 'password' ? (showPassword ? 'text' : 'password') : 'text'}
-                                className={`w-full px-4 py-3 ${field === 'password' ? 'pr-10' : ''} rounded-xl border border-emerald-200/60 bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm`}
-                                placeholder={`Enter ${getFieldLabel(field)}`}
-                                value={credentials[field as keyof CredentialsState] as string || ''}
-                                onChange={(e) => {
-                                  let val = e.target.value;
-                                  const isIdField = ['aggregatorId', 'organizationId', 'companyId', 'distributorId'].includes(field);
-                                  if (isIdField) {
-                                    val = val.toUpperCase().replace(/[^A-Z0-9]/g, '');
-                                    val = val.replace(/([A-Z]+)(\d+)/, '$1-$2');
+                                  let formatted = val;
+                                  if (val.length > 0) {
+                                    formatted = val.match(/.{1,4}/g)?.join(' ') || val;
                                   }
-                                  handleCredentialChange(field, val);
+                                  if (formatted.length <= 14) handleCredentialChange(field, formatted);
                                 }}
                               />
-                              {field === 'password' && (
+                            ) : field === 'pincode' ? (
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  maxLength={6}
+                                  className="w-full px-3 py-2.5 rounded-xl border border-emerald-200/60 bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm tracking-widest text-emerald-950 font-medium pr-16 text-sm"
+                                  placeholder="Pincode"
+                                  value={credentials[field as keyof CredentialsState] as string}
+                                  onChange={(e) => {
+                                    const val = e.target.value.replace(/\D/g, '');
+                                    if (val.length <= 6) handlePincodeUpdate(val);
+                                  }}
+                                />
                                 <button
                                   type="button"
-                                  onClick={() => setShowPassword(!showPassword)}
-                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500/60 hover:text-emerald-700 transition-colors"
+                                  onClick={() => checkPincodeAPI(credentials.pincode as string)}
+                                  disabled={(credentials.pincode || '').length !== 6}
+                                  className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[9px] font-black text-emerald-700 hover:text-emerald-800 bg-emerald-100 hover:bg-emerald-200 px-2 py-1.5 rounded-lg transition-colors disabled:opacity-50"
                                 >
-                                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                  GO
                                 </button>
-                              )}
-                            </div>
-                          )}
+                              </div>
+                            ) : field === 'mobile' ? (
+                              <div className="flex rounded-xl border border-emerald-200/60 bg-white focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition-all shadow-sm overflow-hidden h-[42px]">
+                                <span className="flex items-center px-3 bg-emerald-50 border-r border-emerald-100 text-emerald-800 font-bold text-xs select-none">
+                                  +91
+                                </span>
+                                <input
+                                  type="tel"
+                                  maxLength={10}
+                                  className="w-full px-3 py-2 bg-transparent outline-none text-sm font-bold"
+                                  placeholder="Mobile"
+                                  value={credentials[field as keyof CredentialsState] as string}
+                                  onChange={(e) => {
+                                    const val = e.target.value.replace(/\D/g, '');
+                                    if (val.length <= 10) handleCredentialChange(field, val);
+                                  }}
+                                />
+                              </div>
+                            ) : (
+                              <div className="relative">
+                                <input
+                                  type={field === 'password' ? (showPassword ? 'text' : 'password') : 'text'}
+                                  className={`w-full px-4 py-2.5 ${field === 'password' ? 'pr-10' : ''} rounded-xl border border-emerald-200/60 bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm text-sm`}
+                                  placeholder={`Enter ${getFieldLabel(field)}`}
+                                  value={credentials[field as keyof CredentialsState] as string || ''}
+                                  onChange={(e) => {
+                                    let val = e.target.value;
+                                    const isIdField = ['aggregatorId', 'organizationId', 'companyId', 'distributorId'].includes(field);
+                                    if (isIdField) {
+                                      val = val.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                                      val = val.replace(/([A-Z]+)(\d+)/, '$1-$2');
+                                    }
+                                    handleCredentialChange(field, val);
+                                  }}
+                                />
+                                {field === 'password' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500/60 hover:text-emerald-700 transition-colors"
+                                  >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                  </button>
+                                )}
+                              </div>
+                            )}
                         </div>
                       ))}
                     </div>
+                    </div>
+                  )}
 
                     <Button
-                      className="w-full py-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-base shadow-lg shadow-emerald-600/20 mt-4 group"
+                      className="w-full py-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-sm shadow-xl shadow-emerald-500/10 mt-2 hover:scale-[1.01] transition-all"
                       onClick={handleContinue}
                       disabled={isLoading}
                     >
@@ -661,7 +875,6 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
                       )}
                     </Button>
                   </div>
-                </div>
               )}
 
               {step === 'otp-verification' && (

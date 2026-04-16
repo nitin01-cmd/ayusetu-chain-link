@@ -20,6 +20,7 @@ import AggregatorView from './roles/AggregatorView';
 import ProcessorView from './roles/ProcessorView';
 import ManufacturerView from './roles/ManufacturerView';
 import DistributorView from './roles/DistributorView';
+import FarmerView from './roles/FarmerView';
 
 interface DashboardProps {
   userRole: string;
@@ -71,7 +72,7 @@ const Dashboard = ({ userRole, userId, onLogout }: DashboardProps) => {
               <img src={ayusetuEmblem} alt="AyuSetu Emblem" className="w-full h-full object-contain drop-shadow-sm scale-110" />
             </div>
             <div>
-              <h1 className="text-2xl font-black tracking-tight leading-none text-emerald-950">
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight leading-none text-emerald-950">
                 AyuSetu<span className="text-emerald-500">.</span>
               </h1>
               <p className="text-[10px] font-bold text-emerald-600/80 uppercase tracking-[0.3em] mt-1">
@@ -122,7 +123,7 @@ const Dashboard = ({ userRole, userId, onLogout }: DashboardProps) => {
 
           {/* 3. SIDE PROFILE CARD (GLASS) */}
           <div className="lg:col-span-1">
-            <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 border border-emerald-200/60 shadow-xl shadow-emerald-900/5 relative overflow-hidden group">
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 sm:p-8 border border-emerald-200/60 shadow-xl shadow-emerald-900/5 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-400/10 blur-2xl rounded-full translate-x-10 -translate-y-10 transition-transform group-hover:scale-150 duration-700"></div>
 
               <div className="relative z-10 flex flex-col items-center text-center">
@@ -139,8 +140,8 @@ const Dashboard = ({ userRole, userId, onLogout }: DashboardProps) => {
 
                 {profileData && (
                   <div className="flex flex-col items-center gap-0.5 mt-2 animate-in fade-in zoom-in duration-500">
-                    <p className="text-sm font-bold text-emerald-950 text-center leading-tight">{profileData.name}</p>
-                    <p className="text-[11px] font-semibold text-emerald-600/80 uppercase tracking-wide">
+                    <p className="text-[10px] sm:text-xs font-bold text-emerald-950 text-center leading-tight">{profileData.name}</p>
+                    <p className="text-[9px] sm:text-[11px] font-semibold text-emerald-600/80 uppercase tracking-wide">
                       📍 {profileData.location}
                     </p>
                   </div>
@@ -188,13 +189,14 @@ const Dashboard = ({ userRole, userId, onLogout }: DashboardProps) => {
 
           {/* 4. MAIN CONTENT AREA (GLASS) */}
           <div className="lg:col-span-3 h-full">
-            <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-emerald-200/60 shadow-xl shadow-emerald-900/5 p-8 h-full min-h-[600px] relative overflow-hidden transition-all duration-300">
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-emerald-200/60 shadow-xl shadow-emerald-900/5 p-4 sm:p-8 h-full min-h-[600px] relative overflow-hidden transition-all duration-300">
               <div className="relative z-10 h-full">
                 {/* Dynamically Render Views */}
                 {userRole === 'aggregator' && <AggregatorView userId={userId} />}
                 {userRole === 'processor' && <ProcessorView userId={userId} />}
                 {userRole === 'manufacturer' && <ManufacturerView userId={userId} />}
                 {userRole === 'distributor' && <DistributorView userId={userId} />}
+                {userRole === 'farmer' && <FarmerView userId={userId} />}
               </div>
 
               {/* Subtle Branding Watermark */}

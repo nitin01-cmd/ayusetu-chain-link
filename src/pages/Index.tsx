@@ -4,7 +4,7 @@ import Dashboard from '@/components/Dashboard';
 
 
 const Index = () => {
-  console.log("Index.tsx rendered");
+
   const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('auth') === 'true');
   const [userRole, setUserRole] = useState(() => localStorage.getItem('role') || '');
   const [userId, setUserId] = useState(() => localStorage.getItem('userId') || '');
@@ -28,11 +28,11 @@ const Index = () => {
   };
 
   if (!isAuthenticated) {
-    console.log("Rendering AuthComponent");
+
     return <AuthComponent onLogin={handleLogin} />;
   }
 
-  console.log("Rendering Dashboard");
+
   return <Dashboard userRole={userRole} userId={userId} onLogout={handleLogout} />;
 };
 
