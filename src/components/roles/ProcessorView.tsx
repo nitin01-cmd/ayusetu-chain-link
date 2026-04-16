@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import FarmerDetailsDialog from '@/components/FarmerDetailsDialog';
 import { useBatches } from '@/hooks/useBatches';
+import { PackageCheck, Activity, FileCheck, UserCircle, AlertTriangle } from 'lucide-react';
 
 interface ProcessorViewProps {
   userId: string;
@@ -250,70 +252,70 @@ const ProcessorView = ({ userId }: ProcessorViewProps) => {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold gov-heading">Processor Dashboard</h2>
-          <p className="text-muted-foreground">Manage lot processing, quality testing, and create processed batches</p>
+          <h2 className="text-3xl font-black text-emerald-950 tracking-tight">Processor Hub</h2>
+          <p className="text-emerald-700/80 font-medium tracking-wide mt-1">Manage lot processing, quality testing, and create processed batches</p>
         </div>
         <div className="flex space-x-4">
-          <Badge className="badge-pending">
+          <Badge className="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border-emerald-200 px-4 py-1.5 rounded-xl font-bold uppercase tracking-widest shadow-sm">
             Available Lots: {batches.filter(b => b.type === 'lot').length}
           </Badge>
-          <Badge className="badge-verified">
+          <Badge className="bg-teal-100 hover:bg-teal-200 text-teal-800 border-teal-200 px-4 py-1.5 rounded-xl font-bold uppercase tracking-widest shadow-sm">
             Processing Steps: {batches.filter(b => b.type === 'processed').length}
           </Badge>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Button 
+      {/* Premium Glass Action Buttons */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        
+        <div 
           onClick={() => setActiveForm('receiveLot')}
-          className="btn-government h-auto p-6 flex flex-col items-center space-y-2"
+          className="bg-white/80 backdrop-blur-xl border border-emerald-200/60 shadow-lg shadow-emerald-500/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-emerald-500 hover:border-emerald-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/20 transition-all duration-300 group"
         >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-          </svg>
-          <span>Receive Lot</span>
-        </Button>
+          <div className="w-12 h-12 rounded-2xl bg-emerald-100/80 flex items-center justify-center text-emerald-600 group-hover:bg-white/20 group-hover:text-white transition-colors">
+            <PackageCheck className="w-6 h-6" strokeWidth={2.5} />
+          </div>
+          <span className="font-bold text-emerald-950 text-xs text-center leading-tight group-hover:text-white transition-colors">Receive Lot</span>
+        </div>
 
-        <Button 
+        <div 
           onClick={() => setActiveForm('logProcessing')}
-          className="btn-secondary h-auto p-6 flex flex-col items-center space-y-2"
+          className="bg-white/80 backdrop-blur-xl border border-emerald-200/60 shadow-lg shadow-emerald-500/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-teal-500 hover:border-teal-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-teal-500/20 transition-all duration-300 group"
         >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <span>Log Processing Step</span>
-        </Button>
+          <div className="w-12 h-12 rounded-2xl bg-teal-100/80 flex items-center justify-center text-teal-600 group-hover:bg-white/20 group-hover:text-white transition-colors">
+            <Activity className="w-6 h-6" strokeWidth={2.5} />
+          </div>
+          <span className="font-bold text-emerald-950 text-xs text-center leading-tight group-hover:text-white transition-colors">Log Processing Step</span>
+        </div>
 
-        <Button 
+        <div 
           onClick={() => setActiveForm('qualityTest')}
-          className="btn-accent h-auto p-6 flex flex-col items-center space-y-2"
+          className="bg-white/80 backdrop-blur-xl border border-emerald-200/60 shadow-lg shadow-emerald-500/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-blue-500 hover:border-blue-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/20 transition-all duration-300 group"
         >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span>Quality Test</span>
-        </Button>
+          <div className="w-12 h-12 rounded-2xl bg-blue-100/80 flex items-center justify-center text-blue-600 group-hover:bg-white/20 group-hover:text-white transition-colors">
+            <FileCheck className="w-6 h-6" strokeWidth={2.5} />
+          </div>
+          <span className="font-bold text-emerald-950 text-xs text-center leading-tight group-hover:text-white transition-colors">Quality Test</span>
+        </div>
 
         <FarmerDetailsDialog>
-          <Button className="btn-accent h-auto p-6 flex flex-col items-center space-y-2">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            <span>View Farmer Details</span>
-          </Button>
+          <div className="bg-white/80 backdrop-blur-xl border border-emerald-200/60 shadow-lg shadow-emerald-500/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 cursor-pointer h-full hover:bg-purple-500 hover:border-purple-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-purple-500/20 transition-all duration-300 group">
+            <div className="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center text-purple-600 group-hover:bg-white/20 group-hover:text-white transition-colors">
+              <UserCircle className="w-6 h-6" strokeWidth={2.5} />
+            </div>
+            <span className="font-bold text-emerald-950 text-xs text-center leading-tight group-hover:text-white transition-colors">Farmer Details</span>
+          </div>
         </FarmerDetailsDialog>
 
-        <Button 
+        <div 
           onClick={() => setActiveForm('recall')}
-          className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-auto p-6 flex flex-col items-center space-y-2"
+          className="bg-white/80 backdrop-blur-xl border border-red-200 hover:border-red-500 shadow-lg shadow-red-500/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-red-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-red-500/20 transition-all duration-300 group"
         >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-          </svg>
-          <span>Initiate Recall</span>
-        </Button>
+          <div className="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center text-red-600 group-hover:bg-white/20 group-hover:text-white transition-colors">
+            <AlertTriangle className="w-6 h-6" strokeWidth={2.5} />
+          </div>
+          <span className="font-bold text-red-950 text-xs text-center leading-tight group-hover:text-white transition-colors">Initiate Recall</span>
+        </div>
       </div>
 
       {/* Received Lots Table */}
@@ -453,327 +455,163 @@ const ProcessorView = ({ userId }: ProcessorViewProps) => {
         </div>
       </Card>
 
-      {/* Forms */}
-      {activeForm === 'receiveLot' && (
-        <Card className="gov-card animate-fade-in">
-          <div className="gov-card-header">
-            <h3 className="text-lg font-semibold">Receive Lot from Aggregator</h3>
+      {/* Form Dialogs */}
+      <Dialog open={activeForm === 'receiveLot'} onOpenChange={(open) => !open && setActiveForm(null)}>
+        <DialogContent className="sm:max-w-xl bg-white/95 backdrop-blur-2xl border border-emerald-200/60 rounded-[2rem] p-0 overflow-hidden shadow-2xl">
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 px-8 py-6 border-b border-emerald-100">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-black text-emerald-950 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                  <PackageCheck className="text-emerald-600 w-5 h-5" />
+                </div>
+                Receive Lot
+              </DialogTitle>
+            </DialogHeader>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="lotQR">Lot QR Code *</Label>
-              <div className="flex space-x-2">
+          <div className="p-8">
+            <div className="grid grid-cols-1 gap-5">
+              <div>
+                <Label htmlFor="lotQR" className="text-emerald-950 font-bold ml-1">Lot QR Code *</Label>
+                <div className="flex space-x-2 mt-1.5">
+                  <Input
+                    id="lotQR"
+                    value={formData.lotQR}
+                    onChange={(e) => setFormData({...formData, lotQR: e.target.value})}
+                    placeholder="Scan or enter lot QR code"
+                    className="px-4 py-3 h-auto rounded-xl border border-emerald-200/60 shadow-sm flex-1"
+                    required
+                  />
+                  <Button type="button" onClick={simulateQRScan} className="h-auto px-6 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold shadow-sm">
+                    Scan
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="receivedWeight" className="text-emerald-950 font-bold ml-1">Received Weight (kg) *</Label>
                 <Input
-                  id="lotQR"
-                  value={formData.lotQR}
-                  onChange={(e) => setFormData({...formData, lotQR: e.target.value})}
-                  placeholder="Scan or enter lot QR code"
-                  className="gov-input"
+                  id="receivedWeight"
+                  type="number"
+                  step="0.1"
+                  value={formData.receivedWeight}
+                  onChange={(e) => setFormData({...formData, receivedWeight: e.target.value})}
+                  className="mt-1.5 px-4 py-3 h-auto rounded-xl border border-emerald-200/60 shadow-sm"
                   required
                 />
-                <Button 
-                  type="button" 
-                  onClick={simulateQRScan} 
-                  className="btn-secondary"
-                >
-                  Scan QR
+              </div>
+              <div>
+                <Button onClick={handleReceiveLot} className="w-full py-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-600/20 mt-4">
+                  Log Received Event
                 </Button>
               </div>
             </div>
-            <div>
-              <Label htmlFor="receivedWeight">Received Weight (kg) *</Label>
-              <Input
-                id="receivedWeight"
-                type="number"
-                step="0.1"
-                value={formData.receivedWeight}
-                onChange={(e) => setFormData({...formData, receivedWeight: e.target.value})}
-                placeholder="Enter received weight"
-                className="gov-input"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="conditionPhotos">Condition Photos (JPG/PNG)</Label>
-              <input
-                type="file"
-                id="conditionPhotos"
-                multiple
-                accept=".jpg,.jpeg,.png"
-                onChange={(e) => handlePhotoUpload('condition', e.target.files)}
-                className="gov-input"
-              />
-              {formData.conditionPhotos.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-sm text-muted-foreground">
-                    Uploaded: {formData.conditionPhotos.join(', ')}
-                  </p>
-                </div>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="discrepancies">Discrepancies (if any)</Label>
-              <Input
-                id="discrepancies"
-                value={formData.discrepancies}
-                onChange={(e) => setFormData({...formData, discrepancies: e.target.value})}
-                placeholder="Note any discrepancies"
-                className="gov-input"
-              />
-            </div>
           </div>
-          <div className="flex space-x-4 mt-6">
-            <Button onClick={handleReceiveLot} className="btn-government">
-              Log Received Event
-            </Button>
-            <Button onClick={() => setActiveForm(null)} variant="outline">
-              Cancel
-            </Button>
-          </div>
-        </Card>
-      )}
+        </DialogContent>
+      </Dialog>
 
-      {activeForm === 'logProcessing' && (
-        <Card className="gov-card animate-fade-in">
-          <div className="gov-card-header">
-            <h3 className="text-lg font-semibold">Log Processing Step</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="parentLotId">Parent Lot ID *</Label>
-              <select
-                id="parentLotId"
-                value={formData.parentLotId}
-                onChange={(e) => setFormData({...formData, parentLotId: e.target.value})}
-                className="gov-select"
-                required
-              >
-                 <option value="">Select parent lot</option>
-                 {batches.filter(b => b.type === 'lot').map((batch) => (
-                   <option key={batch.id} value={batch.batch_id}>{batch.batch_id}</option>
-                 ))}
-              </select>
-            </div>
-            <div>
-              <Label htmlFor="operationType">Operation Type *</Label>
-              <select
-                id="operationType"
-                value={formData.operationType}
-                onChange={(e) => setFormData({...formData, operationType: e.target.value})}
-                className="gov-select"
-                required
-              >
-                <option value="">Select operation</option>
-                {operationTypes.map((op) => (
-                  <option key={op} value={op} className="capitalize">{op}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <Label htmlFor="temperature">Temperature (°C) *</Label>
-              <Input
-                id="temperature"
-                type="number"
-                step="0.1"
-                value={formData.temperature}
-                onChange={(e) => setFormData({...formData, temperature: e.target.value})}
-                placeholder="Enter temperature"
-                className="gov-input"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="duration">Duration (hours) *</Label>
-              <Input
-                id="duration"
-                type="number"
-                step="0.1"
-                value={formData.duration}
-                onChange={(e) => setFormData({...formData, duration: e.target.value})}
-                placeholder="Enter duration"
-                className="gov-input"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="equipmentId">Equipment ID (Optional)</Label>
-              <Input
-                id="equipmentId"
-                value={formData.equipmentId}
-                onChange={(e) => setFormData({...formData, equipmentId: e.target.value})}
-                placeholder="Enter equipment ID"
-                className="gov-input"
-              />
-            </div>
-            <div>
-              <Label htmlFor="operatorId">Operator ID (Optional)</Label>
-              <Input
-                id="operatorId"
-                value={formData.operatorId}
-                onChange={(e) => setFormData({...formData, operatorId: e.target.value})}
-                placeholder="Enter operator ID"
-                className="gov-input"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <Label htmlFor="processPhotos">Process Photos (JPG/PNG)</Label>
-              <input
-                type="file"
-                id="processPhotos"
-                multiple
-                accept=".jpg,.jpeg,.png"
-                onChange={(e) => handlePhotoUpload('process', e.target.files)}
-                className="gov-input"
-              />
-              {formData.processPhotos.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-sm text-muted-foreground">
-                    Uploaded: {formData.processPhotos.join(', ')}
-                  </p>
+      <Dialog open={activeForm === 'logProcessing'} onOpenChange={(open) => !open && setActiveForm(null)}>
+        <DialogContent className="sm:max-w-xl bg-white/95 backdrop-blur-2xl border border-emerald-200/60 rounded-[2rem] p-0 overflow-y-auto shadow-2xl max-h-[90vh]">
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 px-8 py-6 border-b border-emerald-100 sticky top-0 z-10">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-black text-emerald-950 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                  <Activity className="text-emerald-600 w-5 h-5" />
                 </div>
-              )}
-            </div>
+                Log Processing Step
+              </DialogTitle>
+            </DialogHeader>
           </div>
-          <div className="flex space-x-4 mt-6">
-            <Button onClick={handleLogProcessing} className="btn-government">
-              Log Processing Step
-            </Button>
-            <Button onClick={() => setActiveForm(null)} variant="outline">
-              Cancel
-            </Button>
-          </div>
-        </Card>
-      )}
-
-      {activeForm === 'qualityTest' && (
-        <Card className="gov-card animate-fade-in">
-          <div className="gov-card-header">
-            <h3 className="text-lg font-semibold">Quality Test Upload Section</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="testBatchId">Batch ID *</Label>
-              <select
-                id="testBatchId"
-                value={formData.testBatchId}
-                onChange={(e) => setFormData({...formData, testBatchId: e.target.value})}
-                className="gov-select"
-                required
-              >
-                 <option value="">Select batch</option>
-                 {batches.filter(b => b.type === 'processed').map((batch) => (
-                   <option key={batch.id} value={batch.batch_id}>{batch.batch_id}</option>
-                 ))}
-              </select>
-            </div>
-            <div>
-              <Label htmlFor="testType">Type of Test *</Label>
-              <select
-                id="testType"
-                value={formData.testType}
-                onChange={(e) => setFormData({...formData, testType: e.target.value})}
-                className="gov-select"
-                required
-              >
-                <option value="">Select test type</option>
-                {testTypes.map((test) => (
-                  <option key={test} value={test}>{test}</option>
-                ))}
-              </select>
-            </div>
-            <div className="md:col-span-2">
-              <Label htmlFor="testResults">Test Results *</Label>
-              <textarea
-                id="testResults"
-                value={formData.testResults}
-                onChange={(e) => setFormData({...formData, testResults: e.target.value})}
-                placeholder="Enter detailed test results"
-                className="gov-input min-h-[100px] resize-vertical"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="certificatePDF">Certificate PDF</Label>
-              <input
-                type="file"
-                id="certificatePDF"
-                accept=".pdf"
-                onChange={(e) => handlePDFUpload(e.target.files)}
-                className="gov-input"
-              />
-              {formData.certificatePDF && (
-                <div className="mt-2">
-                  <p className="text-sm text-muted-foreground">
-                    Uploaded: {formData.certificatePDF}
-                  </p>
+          <div className="p-8">
+            <div className="grid grid-cols-1 gap-5">
+              <div>
+                <Label htmlFor="parentLotId" className="text-emerald-950 font-bold ml-1">Parent Lot ID *</Label>
+                <select
+                  id="parentLotId"
+                  value={formData.parentLotId}
+                  onChange={(e) => setFormData({...formData, parentLotId: e.target.value})}
+                  className="mt-1.5 w-full px-4 py-3 h-auto rounded-xl border border-emerald-200/60 shadow-sm bg-white"
+                  required
+                >
+                   <option value="">Select parent lot</option>
+                   {batches.filter(b => b.type === 'lot').map((batch) => (
+                     <option key={batch.id} value={batch.batch_id}>{batch.batch_id}</option>
+                   ))}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="temperature" className="text-emerald-950 font-bold ml-1">Temp (°C) *</Label>
+                  <Input id="temperature" type="number" step="0.1" value={formData.temperature} onChange={(e) => setFormData({...formData, temperature: e.target.value})} className="mt-1.5 px-4 py-3 h-auto rounded-xl border border-emerald-200/60 shadow-sm" required />
                 </div>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="authorizingAuthority">Authorizing Authority</Label>
-              <Input
-                id="authorizingAuthority"
-                value={formData.authorizingAuthority}
-                onChange={(e) => setFormData({...formData, authorizingAuthority: e.target.value})}
-                placeholder="e.g., Ministry of AYUSH, NABL Lab"
-                className="gov-input"
-              />
+                <div>
+                  <Label htmlFor="duration" className="text-emerald-950 font-bold ml-1">Duration (hr) *</Label>
+                  <Input id="duration" type="number" step="0.1" value={formData.duration} onChange={(e) => setFormData({...formData, duration: e.target.value})} className="mt-1.5 px-4 py-3 h-auto rounded-xl border border-emerald-200/60 shadow-sm" required />
+                </div>
+              </div>
+              <Button onClick={handleLogProcessing} className="w-full py-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-600/20 mt-4">
+                Submit Processing Record
+              </Button>
             </div>
           </div>
-          <div className="flex space-x-4 mt-6">
-            <Button onClick={handleQualityTest} className="btn-government">
-              Upload Quality Test
-            </Button>
-            <Button onClick={() => setActiveForm(null)} variant="outline">
-              Cancel
-            </Button>
-          </div>
-        </Card>
-      )}
+        </DialogContent>
+      </Dialog>
 
-      {activeForm === 'recall' && (
-        <Card className="gov-card animate-fade-in">
-          <div className="gov-card-header">
-            <h3 className="text-lg font-semibold">Initiate Product Recall</h3>
+      <Dialog open={activeForm === 'qualityTest'} onOpenChange={(open) => !open && setActiveForm(null)}>
+        <DialogContent className="sm:max-w-xl bg-white/95 backdrop-blur-2xl border border-emerald-200/60 rounded-[2rem] p-0 overflow-y-auto shadow-2xl">
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 px-8 py-6 border-b border-emerald-100 sticky top-0 z-10">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-black text-emerald-950 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                  <FileCheck className="text-emerald-600 w-5 h-5" />
+                </div>
+                Quality Assessment
+              </DialogTitle>
+            </DialogHeader>
           </div>
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <Label htmlFor="recallBatchId">Batch ID to Recall *</Label>
-              <select
-                id="recallBatchId"
-                value={formData.recallBatchId}
-                onChange={(e) => setFormData({...formData, recallBatchId: e.target.value})}
-                className="gov-select"
-                required
-              >
-                 <option value="">Select batch to recall</option>
-                 {batches.filter(b => b.type === 'processed').map((batch) => (
-                   <option key={batch.id} value={batch.batch_id}>{batch.batch_id}</option>
-                 ))}
-              </select>
-            </div>
-            <div>
-              <Label htmlFor="recallReason">Recall Reason *</Label>
-              <textarea
-                id="recallReason"
-                value={formData.recallReason}
-                onChange={(e) => setFormData({...formData, recallReason: e.target.value})}
-                placeholder="Describe the reason for recall (safety, quality, contamination, etc.)"
-                className="gov-input min-h-[100px] resize-vertical"
-                required
-              />
+          <div className="p-8">
+            <div className="grid grid-cols-1 gap-5">
+              <div>
+                <Label htmlFor="testBatchId" className="text-emerald-950 font-bold ml-1">Batch ID *</Label>
+                <select id="testBatchId" value={formData.testBatchId} onChange={(e) => setFormData({...formData, testBatchId: e.target.value})} className="mt-1.5 w-full px-4 py-3 rounded-xl border border-emerald-200/60 shadow-sm bg-white" required>
+                   <option value="">Select batch</option>
+                   {batches.filter(b => b.type === 'processed').map((batch) => <option key={batch.id} value={batch.batch_id}>{batch.batch_id}</option>)}
+                </select>
+              </div>
+              <Button onClick={handleQualityTest} className="w-full py-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-600/20 mt-4">
+                Affix Quality Certificate
+              </Button>
             </div>
           </div>
-          <div className="flex space-x-4 mt-6">
-            <Button onClick={handleInitiateRecall} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Initiate Recall
-            </Button>
-            <Button onClick={() => setActiveForm(null)} variant="outline">
-              Cancel
-            </Button>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={activeForm === 'recall'} onOpenChange={(open) => !open && setActiveForm(null)}>
+        <DialogContent className="sm:max-w-xl bg-white/95 backdrop-blur-2xl border border-red-200/60 rounded-[2rem] p-0 overflow-y-auto shadow-2xl">
+          <div className="bg-gradient-to-br from-red-50 to-orange-50 px-8 py-6 border-b border-red-100 sticky top-0 z-10">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-black text-red-950 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                  <AlertTriangle className="text-red-600 w-5 h-5" />
+                </div>
+                Initiate Product Recall
+              </DialogTitle>
+            </DialogHeader>
           </div>
-        </Card>
-      )}
+          <div className="p-8">
+            <div className="grid grid-cols-1 gap-5">
+              <div>
+                <Label htmlFor="recallBatchId" className="text-red-950 font-bold ml-1">Target Batch ID *</Label>
+                <select id="recallBatchId" value={formData.recallBatchId} onChange={(e) => setFormData({...formData, recallBatchId: e.target.value})} className="mt-1.5 w-full px-4 py-3 rounded-xl border border-red-200/60 shadow-sm bg-white focus:ring-red-500" required>
+                   <option value="">Select compromised batch...</option>
+                   {batches.filter(b => b.type === 'processed').map((batch) => <option key={batch.id} value={batch.batch_id}>{batch.batch_id}</option>)}
+                </select>
+              </div>
+              <Button onClick={handleInitiateRecall} className="w-full py-6 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg shadow-red-600/20 mt-4">
+                Broadcast Recall Alert
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import ayusetuEmblem from '@/assets/ayusetu-emblem.png';
 import ayuestufrontpage from '@/assets/ayuestufrontpage.png';
-import { ChevronRight, Lock, Check, Heart, Loader2, ChevronDown } from 'lucide-react';
+import { ChevronRight, Lock, Check, Heart, Loader2, ChevronDown, Eye, EyeOff } from 'lucide-react';
 
 interface AuthComponentProps {
   onLogin: (role: string, userId: string) => void;
@@ -612,21 +612,32 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
                               />
                             </div>
                           ) : (
-                            <input
-                              type={field === 'password' ? (showPassword ? 'text' : 'password') : 'text'}
-                              className="w-full px-4 py-3 rounded-xl border border-emerald-200/60 bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm"
-                              placeholder={`Enter ${getFieldLabel(field)}`}
-                              value={credentials[field as keyof CredentialsState] as string || ''}
-                              onChange={(e) => {
-                                let val = e.target.value;
-                                const isIdField = ['aggregatorId', 'organizationId', 'companyId', 'distributorId'].includes(field);
-                                if (isIdField) {
-                                  val = val.toUpperCase().replace(/[^A-Z0-9]/g, '');
-                                  val = val.replace(/([A-Z]+)(\d+)/, '$1-$2');
-                                }
-                                handleCredentialChange(field, val);
-                              }}
-                            />
+                            <div className="relative">
+                              <input
+                                type={field === 'password' ? (showPassword ? 'text' : 'password') : 'text'}
+                                className={`w-full px-4 py-3 ${field === 'password' ? 'pr-10' : ''} rounded-xl border border-emerald-200/60 bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm`}
+                                placeholder={`Enter ${getFieldLabel(field)}`}
+                                value={credentials[field as keyof CredentialsState] as string || ''}
+                                onChange={(e) => {
+                                  let val = e.target.value;
+                                  const isIdField = ['aggregatorId', 'organizationId', 'companyId', 'distributorId'].includes(field);
+                                  if (isIdField) {
+                                    val = val.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                                    val = val.replace(/([A-Z]+)(\d+)/, '$1-$2');
+                                  }
+                                  handleCredentialChange(field, val);
+                                }}
+                              />
+                              {field === 'password' && (
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500/60 hover:text-emerald-700 transition-colors"
+                                >
+                                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                              )}
+                            </div>
                           )}
                           </div>
                         ))}

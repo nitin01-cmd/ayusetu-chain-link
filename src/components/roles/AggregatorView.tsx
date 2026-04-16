@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import FarmerDetailsDialog from '@/components/FarmerDetailsDialog';
 import CreateBatchForFarmerComponent from '@/components/CreateBatchForFarmerComponent';
 import { useBatches } from '@/hooks/useBatches';
+import { Plus, PackageCheck, Layers, Truck, UserCircle, AlertTriangle } from 'lucide-react';
 
 interface AggregatorViewProps {
   userId: string;
@@ -207,74 +209,81 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold gov-heading">Aggregator Dashboard</h2>
-          <p className="text-muted-foreground">Manage raw material collection and preparation for transport</p>
+          <h2 className="text-3xl font-black text-emerald-950 tracking-tight">Aggregator Hub</h2>
+          <p className="text-emerald-700/80 font-medium tracking-wide mt-1">Manage raw material collection and logistics</p>
         </div>
-        <Badge className="badge-verified">
+        <Badge className="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border-emerald-200 px-4 py-1.5 rounded-xl font-bold uppercase tracking-widest shadow-sm">
           Active Collections: {batches.length}
         </Badge>
       </div>
 
-      {/* Action Buttons */}
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-        <Button 
+      {/* Premium Glass Action Buttons */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        
+        {/* Button 1 */}
+        <div 
           onClick={() => setActiveForm('createBatchForFarmer')}
-          className="btn-government h-auto p-6 flex flex-col items-center space-y-2 bg-green-700 hover:bg-green-800"
+          className="bg-white/80 backdrop-blur-xl border border-emerald-200/60 shadow-lg shadow-emerald-500/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-emerald-500 hover:border-emerald-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/20 transition-all duration-300 group"
         >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          <span>New Batch For Farmer</span>
-        </Button>
+          <div className="w-12 h-12 rounded-2xl bg-emerald-100/80 flex items-center justify-center text-emerald-600 group-hover:bg-white/20 group-hover:text-white transition-colors">
+            <Plus className="w-6 h-6" strokeWidth={2.5} />
+          </div>
+          <span className="font-bold text-emerald-950 text-xs text-center leading-tight group-hover:text-white transition-colors">New Farmer Batch</span>
+        </div>
 
-        <Button 
+        {/* Button 2 */}
+        <div 
           onClick={() => setActiveForm('receive')}
-          className="btn-government h-auto p-6 flex flex-col items-center space-y-2"
+          className="bg-white/80 backdrop-blur-xl border border-emerald-200/60 shadow-lg shadow-emerald-500/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-teal-500 hover:border-teal-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-teal-500/20 transition-all duration-300 group"
         >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          <span>Receive Material</span>
-        </Button>
+          <div className="w-12 h-12 rounded-2xl bg-teal-100/80 flex items-center justify-center text-teal-600 group-hover:bg-white/20 group-hover:text-white transition-colors">
+            <PackageCheck className="w-6 h-6" strokeWidth={2.5} />
+          </div>
+          <span className="font-bold text-emerald-950 text-xs text-center leading-tight group-hover:text-white transition-colors">Receive Material</span>
+        </div>
 
-        <Button 
+        {/* Button 3 */}
+        <div 
           onClick={() => setActiveForm('createLot')}
-          className="btn-secondary h-auto p-6 flex flex-col items-center space-y-2"
+          className="bg-white/80 backdrop-blur-xl border border-emerald-200/60 shadow-lg shadow-emerald-500/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-emerald-600 hover:border-emerald-600 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-600/20 transition-all duration-300 group"
         >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-          </svg>
-          <span>Create Lot</span>
-        </Button>
+          <div className="w-12 h-12 rounded-2xl bg-emerald-100/80 flex items-center justify-center text-emerald-600 group-hover:bg-white/20 group-hover:text-white transition-colors">
+            <Layers className="w-6 h-6" strokeWidth={2.5} />
+          </div>
+          <span className="font-bold text-emerald-950 text-xs text-center leading-tight group-hover:text-white transition-colors">Create Lot</span>
+        </div>
 
-        <Button 
+        {/* Button 4 */}
+        <div 
           onClick={() => setActiveForm('transport')}
-          className="btn-accent h-auto p-6 flex flex-col items-center space-y-2"
+          className="bg-white/80 backdrop-blur-xl border border-emerald-200/60 shadow-lg shadow-emerald-500/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-slate-800 hover:border-slate-800 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-800/20 transition-all duration-300 group"
         >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span>Start Transport</span>
-        </Button>
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-white/20 group-hover:text-white transition-colors">
+            <Truck className="w-6 h-6" strokeWidth={2.5} />
+          </div>
+          <span className="font-bold text-emerald-950 text-xs text-center leading-tight group-hover:text-white transition-colors">Start Transport</span>
+        </div>
 
+        {/* Button 5 */}
         <FarmerDetailsDialog>
-          <Button className="btn-accent h-auto p-6 flex flex-col items-center space-y-2">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            <span>View Farmer Details</span>
-          </Button>
+          <div className="bg-white/80 backdrop-blur-xl border border-emerald-200/60 shadow-lg shadow-emerald-500/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 cursor-pointer h-full hover:bg-blue-500 hover:border-blue-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/20 transition-all duration-300 group">
+            <div className="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center text-blue-600 group-hover:bg-white/20 group-hover:text-white transition-colors">
+              <UserCircle className="w-6 h-6" strokeWidth={2.5} />
+            </div>
+            <span className="font-bold text-emerald-950 text-xs text-center leading-tight group-hover:text-white transition-colors">Farmer Details</span>
+          </div>
         </FarmerDetailsDialog>
 
-        <Button 
+        {/* Button 6 */}
+        <div 
           onClick={() => setActiveForm('recall')}
-          className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-auto p-6 flex flex-col items-center space-y-2"
+          className="bg-white/80 backdrop-blur-xl border border-red-200 hover:border-red-500 shadow-lg shadow-red-500/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-red-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-red-500/20 transition-all duration-300 group"
         >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-          </svg>
-          <span>Initiate Recall</span>
-        </Button>
+          <div className="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center text-red-600 group-hover:bg-white/20 group-hover:text-white transition-colors">
+            <AlertTriangle className="w-6 h-6" strokeWidth={2.5} />
+          </div>
+          <span className="font-bold text-red-950 text-xs text-center leading-tight group-hover:text-white transition-colors">Initiate Recall</span>
+        </div>
       </div>
 
       {/* Collection Events Table */}
@@ -324,119 +333,101 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
         </div>
       </Card>
 
-      {/* Forms */}
-      {activeForm === 'receive' && (
-        <Card className="gov-card animate-fade-in">
-          <div className="gov-card-header">
-            <h3 className="text-lg font-semibold">Receive Material from Farmer</h3>
+      {/* Dialog Modals */}
+      <Dialog open={activeForm === 'receive'} onOpenChange={(open) => !open && setActiveForm(null)}>
+        <DialogContent className="sm:max-w-xl bg-white/95 backdrop-blur-2xl border border-emerald-200/60 rounded-[2rem] p-0 overflow-hidden shadow-2xl">
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 px-8 py-6 border-b border-emerald-100">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-black text-emerald-950 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                  <PackageCheck className="text-emerald-600 w-5 h-5" />
+                </div>
+                Receive Material
+              </DialogTitle>
+            </DialogHeader>
           </div>
           
-          {/* Farmer Input Method Selection */}
-          <div className="mb-6">
-            <Label className="text-base font-medium">Input Method</Label>
-            <div className="flex space-x-4 mt-2">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name="scanMethod"
-                  value="manual"
-                  checked={formData.scanMethod === 'manual'}
-                  onChange={(e) => setFormData({...formData, scanMethod: e.target.value, farmerQR: ''})}
-                />
-                <span>Manual Entry</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name="scanMethod"
-                  value="scan"
-                  checked={formData.scanMethod === 'scan'}
-                  onChange={(e) => setFormData({...formData, scanMethod: e.target.value, farmerCode: ''})}
-                />
-                <span>QR Code Scan</span>
-              </label>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {formData.scanMethod === 'manual' ? (
-              <div>
-                <Label htmlFor="farmerCode">Farmer Code</Label>
-                <Input
-                  id="farmerCode"
-                  value={formData.farmerCode}
-                  onChange={(e) => setFormData({...formData, farmerCode: e.target.value})}
-                  placeholder="Enter farmer code manually"
-                  className="gov-input"
-                />
-              </div>
-            ) : (
-              <div>
-                <Label htmlFor="farmerQR">Farmer QR Code</Label>
-                <div className="flex space-x-2">
-                  <Input
-                    id="farmerQR"
-                    value={formData.farmerQR}
-                    onChange={(e) => setFormData({...formData, farmerQR: e.target.value})}
-                    placeholder="QR code result will appear here"
-                    className="gov-input"
-                    readOnly
+          <div className="p-8">
+            <div className="mb-6">
+              <Label className="text-sm font-bold text-emerald-950">Input Method</Label>
+              <div className="flex space-x-4 mt-3">
+                <label className="flex items-center space-x-2 text-sm font-medium cursor-pointer">
+                  <input
+                    type="radio"
+                    className="accent-emerald-600 w-4 h-4"
+                    name="scanMethod"
+                    value="manual"
+                    checked={formData.scanMethod === 'manual'}
+                    onChange={(e) => setFormData({...formData, scanMethod: e.target.value, farmerQR: ''})}
                   />
-                  <Button 
-                    type="button" 
-                    onClick={() => simulateQRScan('farmer')} 
-                    className="btn-secondary"
-                  >
-                    Scan QR
-                  </Button>
-                </div>
+                  <span>Manual Entry</span>
+                </label>
+                <label className="flex items-center space-x-2 text-sm font-medium cursor-pointer">
+                  <input
+                    type="radio"
+                    className="accent-emerald-600 w-4 h-4"
+                    name="scanMethod"
+                    value="scan"
+                    checked={formData.scanMethod === 'scan'}
+                    onChange={(e) => setFormData({...formData, scanMethod: e.target.value, farmerCode: ''})}
+                  />
+                  <span>QR Scan</span>
+                </label>
               </div>
-            )}
-            
-            <div>
-              <Label htmlFor="receivedWeight">Received Weight (kg) *</Label>
-              <Input
-                id="receivedWeight"
-                type="number"
-                step="0.1"
-                value={formData.receivedWeight}
-                onChange={(e) => setFormData({...formData, receivedWeight: e.target.value})}
-                placeholder="Enter weight in kg"
-                className="gov-input"
-                required
-              />
             </div>
 
-            <div className="md:col-span-2">
-              <Label htmlFor="conditionPhotos">Condition Photos (JPG/PNG)</Label>
-              <input
-                type="file"
-                id="conditionPhotos"
-                multiple
-                accept=".jpg,.jpeg,.png"
-                onChange={(e) => handlePhotoUpload('condition', e.target.files)}
-                className="gov-input"
-              />
-              {formData.conditionPhotos.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-sm text-muted-foreground">
-                    Uploaded: {formData.conditionPhotos.join(', ')}
-                  </p>
+            <div className="grid grid-cols-1 gap-5">
+              {formData.scanMethod === 'manual' ? (
+                <div>
+                  <Label htmlFor="farmerCode" className="text-emerald-950 font-bold ml-1">Farmer Code</Label>
+                  <Input
+                    id="farmerCode"
+                    value={formData.farmerCode}
+                    onChange={(e) => setFormData({...formData, farmerCode: e.target.value})}
+                    placeholder="e.g. FARM-1001"
+                    className="mt-1.5 px-4 py-3 h-auto rounded-xl border border-emerald-200/60 shadow-sm"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <Label htmlFor="farmerQR" className="text-emerald-950 font-bold ml-1">Farmer QR</Label>
+                  <div className="flex space-x-3 mt-1.5">
+                    <Input
+                      id="farmerQR"
+                      value={formData.farmerQR}
+                      placeholder="QR Result..."
+                      className="px-4 py-3 h-auto rounded-xl border border-emerald-200/60 shadow-sm"
+                      readOnly
+                    />
+                    <Button type="button" onClick={() => simulateQRScan('farmer')} className="h-auto px-6 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold shadow-sm">
+                      Scan
+                    </Button>
+                  </div>
                 </div>
               )}
+              
+              <div>
+                <Label htmlFor="receivedWeight" className="text-emerald-950 font-bold ml-1">Weight Intake (kg)</Label>
+                <Input
+                  id="receivedWeight"
+                  type="number"
+                  step="0.1"
+                  value={formData.receivedWeight}
+                  onChange={(e) => setFormData({...formData, receivedWeight: e.target.value})}
+                  className="mt-1.5 px-4 py-3 h-auto rounded-xl border border-emerald-200/60 shadow-sm"
+                  required
+                />
+              </div>
+
+              <div>
+                <Button onClick={handleReceiveMaterial} className="w-full py-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-600/20 mt-4">
+                  Commit To Blockchain
+                </Button>
+              </div>
             </div>
           </div>
-          
-          <div className="flex space-x-4 mt-6">
-            <Button onClick={handleReceiveMaterial} className="btn-government">
-              Log Custody Transfer
-            </Button>
-            <Button onClick={() => setActiveForm(null)} variant="outline">
-              Cancel
-            </Button>
-          </div>
-        </Card>
-      )}
+        </DialogContent>
+      </Dialog>
 
       {activeForm === 'createLot' && (
         <Card className="gov-card animate-fade-in">
@@ -701,18 +692,17 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
         </Card>
       )}
 
-      {activeForm === 'createBatchForFarmer' && (
-        <div>
+      <Dialog open={activeForm === 'createBatchForFarmer'} onOpenChange={(open) => !open && setActiveForm(null)}>
+        <DialogContent className="sm:max-w-4xl bg-white border border-emerald-200/60 rounded-3xl p-6 shadow-2xl h-[90vh] overflow-y-auto">
           <CreateBatchForFarmerComponent 
-            collectorName="Current Collector" // In real app, fetch from user data
+            collectorName="Current Collector"
             collectorId={userId}
             onBatchCreated={(batchId, farmerId) => {
-              console.log('Batch created:', batchId, 'for farmer:', farmerId);
               setActiveForm(null);
             }}
           />
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

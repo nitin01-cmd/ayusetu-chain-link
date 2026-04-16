@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import FarmerDetailsDialog from '@/components/FarmerDetailsDialog';
 import { useBatches } from '@/hooks/useBatches';
+import { PackagePlus, QrCode, UserCircle, AlertTriangle } from 'lucide-react';
 
 interface ManufacturerViewProps {
   userId: string;
@@ -134,59 +136,60 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold gov-heading">Manufacturer Dashboard</h2>
-          <p className="text-muted-foreground">Create final products and manage quality control</p>
+          <h2 className="text-3xl font-black text-emerald-950 tracking-tight">Manufacturer Hub</h2>
+          <p className="text-emerald-700/80 font-medium tracking-wide mt-1">Create final products, generate QRs, and manage quality control</p>
         </div>
         <div className="flex space-x-4">
-          <Badge className="badge-verified">
-            Available Batches: {batches.filter(b => b.type === 'processed' && b.status !== 'finalized').length}
+          <Badge className="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border-emerald-200 px-4 py-1.5 rounded-xl font-bold uppercase tracking-widest shadow-sm">
+            Available: {batches.filter(b => b.type === 'processed' && b.status !== 'finalized').length}
           </Badge>
-          <Badge className="badge-pending">
+          <Badge className="bg-teal-100 hover:bg-teal-200 text-teal-800 border-teal-200 px-4 py-1.5 rounded-xl font-bold uppercase tracking-widest shadow-sm">
             Final Products: {batches.filter(b => b.type === 'final_product').length}
           </Badge>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Button 
+      {/* Premium Glass Action Buttons */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        
+        <div 
           onClick={() => setActiveForm('createProduct')}
-          className="btn-government h-auto p-6 flex flex-col items-center space-y-2"
+          className="bg-white/80 backdrop-blur-xl border border-emerald-200/60 shadow-lg shadow-emerald-500/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-emerald-500 hover:border-emerald-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/20 transition-all duration-300 group"
         >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-          </svg>
-          <span>Create Final Product</span>
-        </Button>
+          <div className="w-12 h-12 rounded-2xl bg-emerald-100/80 flex items-center justify-center text-emerald-600 group-hover:bg-white/20 group-hover:text-white transition-colors">
+            <PackagePlus className="w-6 h-6" strokeWidth={2.5} />
+          </div>
+          <span className="font-bold text-emerald-950 text-xs text-center leading-tight group-hover:text-white transition-colors">Create Final Product</span>
+        </div>
 
-        <Button 
+        <div 
           onClick={() => setActiveForm('generateQR')}
-          className="btn-secondary h-auto p-6 flex flex-col items-center space-y-2"
+          className="bg-white/80 backdrop-blur-xl border border-emerald-200/60 shadow-lg shadow-emerald-500/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-slate-800 hover:border-slate-800 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-800/20 transition-all duration-300 group"
         >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 01-3 0m3 0H8.25m11.25 0H16.5m3.75 0v11.25a2.25 2.25 0 01-2.25 2.25H6.75a2.25 2.25 0 01-2.25-2.25V8.25" />
-          </svg>
-          <span>View QR Codes</span>
-        </Button>
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-white/20 group-hover:text-white transition-colors">
+            <QrCode className="w-6 h-6" strokeWidth={2.5} />
+          </div>
+          <span className="font-bold text-emerald-950 text-xs text-center leading-tight group-hover:text-white transition-colors">View QR Codes</span>
+        </div>
 
         <FarmerDetailsDialog>
-          <Button className="btn-accent h-auto p-6 flex flex-col items-center space-y-2">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            <span>View Farmer Details</span>
-          </Button>
+          <div className="bg-white/80 backdrop-blur-xl border border-emerald-200/60 shadow-lg shadow-emerald-500/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 cursor-pointer h-full hover:bg-blue-500 hover:border-blue-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/20 transition-all duration-300 group">
+            <div className="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center text-blue-600 group-hover:bg-white/20 group-hover:text-white transition-colors">
+              <UserCircle className="w-6 h-6" strokeWidth={2.5} />
+            </div>
+            <span className="font-bold text-emerald-950 text-xs text-center leading-tight group-hover:text-white transition-colors">Farmer Details</span>
+          </div>
         </FarmerDetailsDialog>
 
-        <Button 
+        <div 
           onClick={() => setActiveForm('recall')}
-          className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-auto p-6 flex flex-col items-center space-y-2"
+          className="bg-white/80 backdrop-blur-xl border border-red-200 hover:border-red-500 shadow-lg shadow-red-500/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-red-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-red-500/20 transition-all duration-300 group"
         >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-          </svg>
-          <span>Initiate Recall</span>
-        </Button>
+          <div className="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center text-red-600 group-hover:bg-white/20 group-hover:text-white transition-colors">
+            <AlertTriangle className="w-6 h-6" strokeWidth={2.5} />
+          </div>
+          <span className="font-bold text-red-950 text-xs text-center leading-tight group-hover:text-white transition-colors">Initiate Recall</span>
+        </div>
       </div>
 
       {/* Processed Batches Table */}
@@ -283,128 +286,142 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
         </div>
       </Card>
 
-      {/* Forms */}
-      {activeForm === 'createProduct' && (
-        <Card className="gov-card animate-fade-in">
-          <div className="gov-card-header">
-            <h3 className="text-lg font-semibold">Create Final Product Batch</h3>
-          </div>
-          <div className="space-y-6">
-            <div>
-              <Label>Select Input Batches</Label>
-              <div className="mt-2 space-y-2 max-h-40 overflow-y-auto">
-                {batches.filter(b => b.type === 'processed' && b.status !== 'finalized').map((batch) => (
-                  <div key={batch.id} className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      id={batch.batch_id}
-                      checked={formData.selectedBatches.includes(batch.batch_id)}
-                      onChange={() => handleBatchSelection(batch.batch_id)}
-                      className="rounded border-gray-300"
-                    />
-                    <label htmlFor={batch.batch_id} className="flex-1 text-sm">
-                      {batch.batch_id} - {batch.quantity}kg ({batch.metadata?.operation})
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <Label htmlFor="qcResults">QC Results</Label>
-              <select
-                id="qcResults"
-                value={formData.qcResults}
-                onChange={(e) => setFormData({...formData, qcResults: e.target.value})}
-                className="gov-select mt-2"
-              >
-                <option value="">Select QC result</option>
-                <option value="Pass">Pass</option>
-                <option value="Pass with conditions">Pass with conditions</option>
-                <option value="Fail">Fail</option>
-              </select>
-            </div>
-          </div>
-          <div className="flex space-x-4 mt-6">
-            <Button onClick={handleCreateFinalProduct} className="btn-government">
-              Create Final Product
-            </Button>
-            <Button onClick={() => setActiveForm(null)} variant="outline">
-              Cancel
-            </Button>
-          </div>
-        </Card>
-      )}
-
-      {activeForm === 'generateQR' && (
-        <Card className="gov-card animate-fade-in">
-          <div className="gov-card-header">
-            <h3 className="text-lg font-semibold">Generated QR Codes</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {batches.filter(b => b.type === 'final_product').map((batch) => (
-              <div key={batch.id} className="p-4 border rounded-lg">
-                <div className="font-mono text-sm mb-2">{batch.batch_id}</div>
-                <div className="bg-gray-100 p-4 rounded text-center font-mono text-xs">
-                  {batch.metadata?.qrCode || 'QR Code'}
+      {/* Dialog Modals */}
+      <Dialog open={activeForm === 'createProduct'} onOpenChange={(open) => !open && setActiveForm(null)}>
+        <DialogContent className="sm:max-w-xl bg-white/95 backdrop-blur-2xl border border-emerald-200/60 rounded-[2rem] p-0 overflow-hidden shadow-2xl">
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 px-8 py-6 border-b border-emerald-100">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-black text-emerald-950 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                  <PackagePlus className="text-emerald-600 w-5 h-5" />
                 </div>
-                <Badge className={`mt-2 ${getStatusColor(batch.status)}`}>
-                  {batch.status === 'recalled' ? 'RECALLED' : batch.status}
-                </Badge>
+                Create Final Product
+              </DialogTitle>
+            </DialogHeader>
+          </div>
+          <div className="p-8">
+            <div className="space-y-6">
+              <div>
+                <Label className="text-sm font-bold text-emerald-950">Select Input Processing Batches</Label>
+                <div className="mt-3 space-y-2 max-h-40 overflow-y-auto p-2 bg-emerald-50/50 rounded-xl border border-emerald-100">
+                  {batches.filter(b => b.type === 'processed' && b.status !== 'finalized').map((batch) => (
+                    <div key={batch.id} className="flex items-center space-x-3 p-2 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-emerald-200/60">
+                      <input
+                        type="checkbox"
+                        id={batch.batch_id}
+                        checked={formData.selectedBatches.includes(batch.batch_id)}
+                        onChange={() => handleBatchSelection(batch.batch_id)}
+                        className="rounded border-gray-300 accent-emerald-600 w-4 h-4 cursor-pointer"
+                      />
+                      <label htmlFor={batch.batch_id} className="flex-1 text-sm font-medium cursor-pointer text-emerald-900">
+                        {batch.batch_id} - {batch.quantity}kg ({batch.metadata?.operation})
+                      </label>
+                    </div>
+                  ))}
+                  {batches.filter(b => b.type === 'processed' && b.status !== 'finalized').length === 0 && (
+                    <p className="text-sm text-center text-emerald-600/60 py-4 font-medium">No active processing batches found</p>
+                  )}
+                </div>
               </div>
-            ))}
-          </div>
-          <div className="flex space-x-4 mt-6">
-            <Button onClick={() => setActiveForm(null)} variant="outline">
-              Close
-            </Button>
-          </div>
-        </Card>
-      )}
+              
+              <div>
+                <Label htmlFor="qcResults" className="text-sm font-bold text-emerald-950">Confirm QC Results</Label>
+                <select
+                  id="qcResults"
+                  value={formData.qcResults}
+                  onChange={(e) => setFormData({...formData, qcResults: e.target.value})}
+                  className="mt-2 w-full px-4 py-3 h-auto rounded-xl border border-emerald-200/60 shadow-sm bg-white font-medium"
+                >
+                  <option value="">Select an outcome</option>
+                  <option value="Pass">Pass - Ready for Distribution</option>
+                  <option value="Pass with conditions">Pass with conditions</option>
+                  <option value="Fail">Fail Quality Check</option>
+                </select>
+              </div>
 
-      {activeForm === 'recall' && (
-        <Card className="gov-card animate-fade-in">
-          <div className="gov-card-header">
-            <h3 className="text-lg font-semibold">Initiate Product Recall</h3>
-          </div>
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <Label htmlFor="recallBatchId">Final Product Batch ID</Label>
-              <select
-                id="recallBatchId"
-                value={formData.recallBatchId}
-                onChange={(e) => setFormData({...formData, recallBatchId: e.target.value})}
-                className="gov-select mt-2"
-              >
-                <option value="">Select batch to recall</option>
-                {batches.filter(b => b.type === 'final_product' && b.status !== 'recalled').map((batch) => (
-                  <option key={batch.id} value={batch.batch_id}>
-                    {batch.batch_id} - {batch.metadata?.qrCode}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <Label htmlFor="recallReason">Recall Reason</Label>
-              <Input
-                id="recallReason"
-                value={formData.recallReason}
-                onChange={(e) => setFormData({...formData, recallReason: e.target.value})}
-                placeholder="Enter reason for recall"
-                className="gov-input mt-2"
-              />
+              <Button onClick={handleCreateFinalProduct} className="w-full py-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-600/20 mt-4">
+                Finalize Product Chain & Generate Master QR
+              </Button>
             </div>
           </div>
-          <div className="flex space-x-4 mt-6">
-            <Button onClick={handleInitiateRecall} className="btn-accent">
-              Initiate Recall
-            </Button>
-            <Button onClick={() => setActiveForm(null)} variant="outline">
-              Cancel
-            </Button>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={activeForm === 'generateQR'} onOpenChange={(open) => !open && setActiveForm(null)}>
+        <DialogContent className="sm:max-w-2xl bg-white/95 backdrop-blur-2xl border border-emerald-200/60 rounded-[2rem] p-0 overflow-hidden shadow-2xl max-h-[85vh] overflow-y-auto">
+          <div className="bg-gradient-to-br from-indigo-50 to-blue-50 px-8 py-6 border-b border-indigo-100 sticky top-0 z-10">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-black text-indigo-950 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                  <QrCode className="text-indigo-600 w-5 h-5" />
+                </div>
+                Master Product QR Database
+              </DialogTitle>
+            </DialogHeader>
           </div>
-        </Card>
-      )}
+          <div className="p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {batches.filter(b => b.type === 'final_product').map((batch) => (
+                <div key={batch.id} className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-indigo-300 transition-colors group">
+                  <div className="font-bold text-slate-800 text-sm mb-3">Product: {batch.batch_id}</div>
+                  <div className="bg-slate-50 p-4 rounded-xl text-center font-mono text-xs border border-dashed border-slate-300 flex flex-col items-center justify-center gap-2 group-hover:bg-indigo-50 transition-colors">
+                    <QrCode className="w-12 h-12 text-slate-400 group-hover:text-indigo-500" />
+                    <span className="text-slate-600 font-bold break-all">{batch.metadata?.qrCode || 'GENERATING_QR...'}</span>
+                  </div>
+                  <Badge className={`mt-4 w-full justify-center ${getStatusColor(batch.status)}`}>
+                    {batch.status === 'recalled' ? 'RECALLED' : batch.status}
+                  </Badge>
+                </div>
+              ))}
+              {batches.filter(b => b.type === 'final_product').length === 0 && (
+                <p className="col-span-full h-32 flex items-center justify-center text-sm font-medium text-slate-400">No Final Products Generated</p>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={activeForm === 'recall'} onOpenChange={(open) => !open && setActiveForm(null)}>
+        <DialogContent className="sm:max-w-xl bg-white/95 backdrop-blur-2xl border border-red-200/60 rounded-[2rem] p-0 overflow-y-auto shadow-2xl">
+          <div className="bg-gradient-to-br from-red-50 to-orange-50 px-8 py-6 border-b border-red-100 sticky top-0 z-10">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-black text-red-950 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                  <AlertTriangle className="text-red-600 w-5 h-5" />
+                </div>
+                Initiate Product Recall
+              </DialogTitle>
+            </DialogHeader>
+          </div>
+          <div className="p-8">
+            <div className="grid grid-cols-1 gap-5">
+              <div>
+                <Label htmlFor="recallBatchId" className="text-red-950 font-bold ml-1">Final Product Batch *</Label>
+                <select id="recallBatchId" value={formData.recallBatchId} onChange={(e) => setFormData({...formData, recallBatchId: e.target.value})} className="mt-1.5 w-full px-4 py-3 rounded-xl border border-red-200/60 shadow-sm bg-white focus:ring-red-500" required>
+                   <option value="">Select compromised product batch...</option>
+                   {batches.filter(b => b.type === 'final_product' && b.status !== 'recalled').map((batch) => (
+                     <option key={batch.id} value={batch.batch_id}>{batch.batch_id} - {batch.metadata?.qrCode}</option>
+                   ))}
+                </select>
+              </div>
+              <div>
+                <Label htmlFor="recallReason" className="text-red-950 font-bold ml-1">Recall Reason *</Label>
+                <textarea
+                  id="recallReason"
+                  value={formData.recallReason}
+                  onChange={(e) => setFormData({...formData, recallReason: e.target.value})}
+                  placeholder="Describe the reason for public recall..."
+                  className="mt-1.5 w-full px-4 py-3 rounded-xl border border-red-200/60 shadow-sm bg-white min-h-[120px] resize-none focus:ring-red-500"
+                  required
+                />
+              </div>
+              <Button onClick={handleInitiateRecall} className="w-full py-6 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg shadow-red-600/20 mt-4">
+                Execute Irreversible Recall
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

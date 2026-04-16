@@ -11,6 +11,9 @@ import {
   ChevronRight,
   Database
 } from 'lucide-react';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { firestore } from '@/integrations/firebase/client';
+import ayusetuEmblem from '@/assets/ayusetu-emblem.png';
 
 // View imports
 import AggregatorView from './roles/AggregatorView';
@@ -26,6 +29,22 @@ interface DashboardProps {
 
 const Dashboard = ({ userRole, userId, onLogout }: DashboardProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [profileData, setProfileData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const q = query(collection(firestore, 'business_nodes'), where('id', '==', userId));
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          setProfileData(snapshot.docs[0].data());
+        }
+      } catch (err) {
+        console.error("Error fetching profile details from Firebase:", err);
+      }
+    };
+    if (userId) fetchProfile();
+  }, [userId]);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -40,37 +59,40 @@ const Dashboard = ({ userRole, userId, onLogout }: DashboardProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
-      {/* 1. DARK SIDEBAR-STYLE TOP NAV */}
-      <header className="bg-[#0F172A] text-white shadow-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex flex-col font-sans relative overflow-hidden">
+      {/* Background Decorators */}
+      <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-emerald-400/20 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-teal-400/20 rounded-full blur-[100px] pointer-events-none" />
+      {/* 1. GLASSMORPHISM TOP NAV */}
+      <header className="bg-white/70 backdrop-blur-xl border-b border-emerald-200/60 sticky top-0 z-50">
         <div className="container mx-auto px-4 h-20 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="p-2.5 bg-emerald-500 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)]">
-              <ShieldCheck className="text-white w-7 h-7" />
+            <div className="w-14 h-14 rounded-xl bg-white border border-emerald-100/50 flex items-center justify-center p-1.5 shadow-sm">
+              <img src={ayusetuEmblem} alt="AyuSetu Emblem" className="w-full h-full object-contain drop-shadow-sm scale-110" />
             </div>
             <div>
-              <h1 className="text-2xl font-black tracking-tight leading-none">
+              <h1 className="text-2xl font-black tracking-tight leading-none text-emerald-950">
                 AyuSetu<span className="text-emerald-500">.</span>
               </h1>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">
+              <p className="text-[10px] font-bold text-emerald-600/80 uppercase tracking-[0.3em] mt-1">
                 Govt. Traceability Node
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-8">
-            <div className="hidden lg:block text-right border-r border-slate-700 pr-6">
-              <div className="text-lg font-mono font-bold text-emerald-400 leading-none">
+            <div className="hidden lg:block text-right border-r border-emerald-200 pr-6 relative z-10">
+              <div className="text-lg font-mono font-bold text-emerald-900 leading-none">
                 {currentTime.toLocaleTimeString('en-IN', { hour12: true })}
               </div>
-              <div className="text-[10px] text-slate-500 font-bold uppercase mt-1">
+              <div className="text-[10px] text-emerald-600 font-bold uppercase mt-1">
                 {currentTime.toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' })}
               </div>
             </div>
             
             <Button 
               onClick={onLogout}
-              className="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/20 px-6 font-bold transition-all duration-300"
+              className="bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 hover:border-red-500 px-6 font-bold shadow-sm transition-all duration-300 relative z-10"
             >
               <LogOut size={18} className="mr-2" />
               LOGOUT
@@ -79,14 +101,12 @@ const Dashboard = ({ userRole, userId, onLogout }: DashboardProps) => {
         </div>
       </header>
 
-      {/* 2. SUB-NAV / BREADCRUMBS (WHITE) */}
-      <div className="bg-white border-b border-slate-200 py-3 shadow-sm">
+      {/* 2. SUB-NAV / BREADCRUMBS (TRANSPARENT GLASS) */}
+      <div className="bg-white/40 backdrop-blur-md border-b border-emerald-200/40 py-3 shadow-sm relative z-40">
         <div className="container mx-auto px-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest">
+          <div className="flex items-center gap-2 text-xs font-bold text-emerald-950 uppercase tracking-widest">
             <LayoutDashboard size={14} className="text-emerald-600" />
-            <span>Console</span>
-            <ChevronRight size={12} />
-            <span className="text-slate-900">{userRole}</span>
+            <span className="text-emerald-950">{roleDisplayNames[userRole as keyof typeof roleDisplayNames] || userRole}</span>
           </div>
           <div className="flex items-center gap-4 text-[11px] font-bold">
             <div className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
@@ -97,48 +117,64 @@ const Dashboard = ({ userRole, userId, onLogout }: DashboardProps) => {
         </div>
       </div>
 
-      <main className="container mx-auto px-4 py-10 flex-grow">
+      <main className="container mx-auto px-4 py-10 flex-grow relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           
-          {/* 3. SIDE PROFILE CARD (DARK) */}
+          {/* 3. SIDE PROFILE CARD (GLASS) */}
           <div className="lg:col-span-1">
-            <div className="bg-[#1E293B] rounded-3xl p-8 shadow-xl text-white relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full translate-x-10 -translate-y-10"></div>
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 border border-emerald-200/60 shadow-xl shadow-emerald-900/5 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-400/10 blur-2xl rounded-full translate-x-10 -translate-y-10 transition-transform group-hover:scale-150 duration-700"></div>
               
               <div className="relative z-10 flex flex-col items-center text-center">
-                <div className="w-20 h-20 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center mb-4 shadow-2xl">
-                  <User size={40} className="text-emerald-400" />
+                <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 border-2 border-white flex items-center justify-center mb-4 shadow-lg overflow-hidden shrink-0">
+                  <img 
+                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffdfbf`} 
+                    alt="Profile Avatar" 
+                    className="w-full h-full object-cover" 
+                  />
                 </div>
-                <h2 className="text-xl font-bold truncate w-full">{userId}</h2>
-                <Badge className="mt-3 bg-emerald-500 text-white border-none px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                <h2 className="text-xl font-bold truncate w-full text-emerald-950">{userId}</h2>
+                <Badge className="mt-3 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-200 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors mb-2">
                   {userRole}
                 </Badge>
                 
-                <div className="w-full mt-8 pt-8 border-t border-slate-700/50 space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Security Level</span>
-                    <span className="text-xs font-mono text-emerald-400 font-bold underline underline-offset-4">L4_HIGH</span>
+                {profileData && (
+                  <div className="flex flex-col items-center gap-0.5 mt-2 animate-in fade-in zoom-in duration-500">
+                    <p className="text-sm font-bold text-emerald-950 text-center leading-tight">{profileData.name}</p>
+                    <p className="text-[11px] font-semibold text-emerald-600/80 uppercase tracking-wide">
+                      📍 {profileData.location}
+                    </p>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Node Status</span>
-                    <span className="text-[10px] text-emerald-400 font-black">● ONLINE</span>
+                )}
+                
+                <div className="w-full mt-8 pt-8 border-t border-emerald-100/60 space-y-4 text-emerald-900">
+                  <div className="flex justify-between items-center bg-white/50 px-4 py-2.5 rounded-xl border border-emerald-50">
+                    <span className="text-[10px] text-emerald-600/80 font-bold uppercase">Security Level</span>
+                    <span className="text-xs font-mono text-emerald-700 font-bold">L4_HIGH</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-white/50 px-4 py-2.5 rounded-xl border border-emerald-50">
+                    <span className="text-[10px] text-emerald-600/80 font-bold uppercase">Node Status</span>
+                    <span className="text-[10px] text-emerald-600 font-black flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> ONLINE
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div className="mt-6 p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-start gap-3">
-               <ShieldAlert size={20} className="text-emerald-600 mt-0.5" />
-               <p className="text-[11px] text-emerald-800 font-medium leading-relaxed">
+            <div className="mt-6 p-5 bg-white/80 backdrop-blur-xl border border-emerald-200/60 shadow-lg shadow-emerald-900/5 rounded-2xl flex items-start gap-4 transition-all hover:bg-white relative overflow-hidden group">
+               <ShieldAlert size={20} className="text-emerald-500 mt-0.5 shrink-0" />
+               <p className="text-[11px] text-emerald-800 font-medium leading-relaxed relative z-10">
                  <strong>System Advisory:</strong> Ensure all batch records are cryptographically signed before 18:00 IST.
                </p>
+               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-100/30 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
             </div>
           </div>
 
-          {/* 4. MAIN CONTENT AREA (WHITE) */}
-          <div className="lg:col-span-3">
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/50 p-8 min-h-[600px] relative overflow-hidden">
-              <div className="relative z-10">
+          {/* 4. MAIN CONTENT AREA (GLASS) */}
+          <div className="lg:col-span-3 h-full">
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-emerald-200/60 shadow-xl shadow-emerald-900/5 p-8 h-full min-h-[600px] relative overflow-hidden transition-all duration-300">
+              <div className="relative z-10 h-full">
                 {/* Dynamically Render Views */}
                 {userRole === 'aggregator' && <AggregatorView userId={userId} />}
                 {userRole === 'processor' && <ProcessorView userId={userId} />}
@@ -147,7 +183,7 @@ const Dashboard = ({ userRole, userId, onLogout }: DashboardProps) => {
               </div>
               
               {/* Subtle Branding Watermark */}
-              <div className="absolute bottom-10 right-10 opacity-[0.03] select-none pointer-events-none">
+              <div className="absolute bottom-10 right-10 opacity-[0.03] select-none pointer-events-none text-emerald-900">
                 <ShieldCheck size={280} />
               </div>
             </div>
@@ -156,13 +192,12 @@ const Dashboard = ({ userRole, userId, onLogout }: DashboardProps) => {
       </main>
 
       {/* 5. MINIMALIST FOOTER */}
-      <footer className="bg-white border-t border-slate-200 py-8">
+      <footer className="bg-white/40 backdrop-blur-md border-t border-emerald-200/40 py-8 relative z-10">
         <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-6">
-            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">AyuSetu Traceability Platform</div>
-            <div className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">NIC_CLOUD_DEPLOYED</div>
+            <div className="text-[10px] font-black text-emerald-900/60 uppercase tracking-widest">AyuSetu Traceability Platform</div>
           </div>
-          <div className="text-[10px] font-bold text-slate-400 uppercase">
+          <div className="text-[10px] font-bold text-emerald-900/40 uppercase">
             Ministry of AYUSH • © 2026 Government of India
           </div>
         </div>
