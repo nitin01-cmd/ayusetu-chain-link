@@ -232,152 +232,140 @@ const CreateBatchForFarmerComponent = ({ collectorName, collectorId, onBatchCrea
   // Form Step
   if (step === 'form') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-amber-50 to-blue-50 pb-8">
+      <div className="bg-transparent pb-8">
         {/* Header */}
-        <div className="sticky top-0 z-40 bg-gradient-to-r from-blue-700 to-teal-700 text-white p-4 sm:p-6 shadow-lg">
-          <div className="max-w-2xl mx-auto">
-            <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
-              <Leaf size={28} className="text-amber-300" />
-              Add New Batch (For Farmer)
+        <div className="bg-gradient-to-br from-emerald-900 to-teal-900 text-white px-8 py-10 rounded-b-[3rem] shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/3"></div>
+          <div className="relative z-10 max-w-3xl mx-auto">
+            <h1 className="text-3xl font-black flex items-center gap-4 tracking-tight">
+              <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/20">
+                <Leaf size={24} className="text-emerald-300" />
+              </div>
+              Farmer Intake Node
             </h1>
-            <p className="text-blue-100 text-sm sm:text-base mt-1">Record herb details on behalf of farmer</p>
+            <p className="text-emerald-100/70 font-medium mt-3 max-w-lg leading-relaxed">
+              Recording herbal batch parameters to the global traceability ledger on behalf of the cultivation partner.
+            </p>
           </div>
         </div>
 
         {/* Collector Info */}
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4">
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-blue-100">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-xs text-gray-600 font-semibold uppercase">Collector Name</p>
-                <p className="text-lg font-bold text-gray-900">{collectorName}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-600 font-semibold uppercase">Collector ID</p>
-                <p className="text-lg font-bold text-blue-700">{collectorId}</p>
-              </div>
+        <div className="max-w-3xl mx-auto px-6 -mt-8 relative z-20">
+          <div className="bg-white/90 backdrop-blur-2xl rounded-[2rem] p-6 shadow-xl border border-emerald-100 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+               <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                  <User size={18} className="text-emerald-600" />
+               </div>
+               <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Operating Officer</p>
+                  <p className="text-base font-black text-emerald-950">{collectorName}</p>
+               </div>
+            </div>
+            <div className="text-right">
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Node ID</p>
+               <p className="text-base font-mono font-bold text-emerald-600 truncate">{collectorId}</p>
             </div>
           </div>
         </div>
 
         {/* Form Sections */}
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 space-y-5">
+        <div className="max-w-3xl mx-auto px-6 space-y-8 mt-10 pb-20">
           
           {/* Section 1: Farmer Details */}
-          <div className="bg-white rounded-xl p-5 sm:p-6 shadow-md border-l-4 border-blue-600">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
-              <User size={20} className="text-blue-600" />
-              Farmer Details
-            </h2>
+          <div className="bg-white/70 backdrop-blur-xl rounded-[2.5rem] p-8 border border-white shadow-sm">
+            <div className="flex items-center gap-3 mb-8">
+               <div className="w-2 h-8 bg-emerald-600 rounded-full"></div>
+               <h2 className="text-xl font-black text-emerald-950 tracking-tight">Farmer Identity</h2>
+            </div>
 
-            <div className="space-y-4">
-              {/* Farmer Name */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Farmer Name *</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <label className="text-sm font-bold text-emerald-950 ml-1">Legal Name of Farmer *</label>
                 <input
                   type="text"
-                  placeholder="Enter farmer's full name"
+                  placeholder="Full name as per registry"
                   value={formData.farmerName}
                   onChange={(e) => setFormData(prev => ({ ...prev, farmerName: e.target.value }))}
-                  className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all font-semibold text-gray-900 placeholder-gray-400"
+                  className="w-full mt-2 px-5 py-4 bg-white/50 border border-emerald-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold text-emerald-950 placeholder-slate-400"
                 />
               </div>
 
-              {/* Farmer Mobile */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Mobile Number (Optional)</label>
-                <div className="flex gap-2">
-                  <div className="flex items-center px-4 py-3 bg-white border-2 border-gray-200 rounded-xl font-semibold text-gray-700 flex-shrink-0">
+                <label className="text-sm font-bold text-emerald-950 ml-1">Contact Interface</label>
+                <div className="flex gap-3 mt-2">
+                  <div className="flex items-center px-4 bg-emerald-50 border border-emerald-100 rounded-2xl font-black text-emerald-700">
                     +91
                   </div>
                   <input
                     type="tel"
-                    placeholder="10-digit number"
+                    placeholder="Mobile number"
                     value={formData.farmerMobile}
                     onChange={(e) => setFormData(prev => ({ ...prev, farmerMobile: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
-                    maxLength={10}
-                    className="flex-1 px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all font-semibold text-gray-900 placeholder-gray-400"
+                    className="flex-1 px-5 py-4 bg-white/50 border border-emerald-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold text-emerald-950"
                   />
                 </div>
               </div>
 
-              {/* Farmer Village */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Village / Location *</label>
+                <label className="text-sm font-bold text-emerald-950 ml-1">Village/Hectare Location *</label>
                 <input
                   type="text"
-                  placeholder="Enter village or location name"
+                  placeholder="Primary location"
                   value={formData.farmerVillage}
                   onChange={(e) => setFormData(prev => ({ ...prev, farmerVillage: e.target.value }))}
-                  className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all font-semibold text-gray-900 placeholder-gray-400"
+                  className="w-full mt-2 px-5 py-4 bg-white/50 border border-emerald-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-bold text-emerald-950"
                 />
               </div>
 
-              {/* Farmer ID */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Farmer ID (Optional)</label>
-                <div className="flex gap-2">
+              <div className="md:col-span-2">
+                <label className="text-sm font-bold text-emerald-950 ml-1">Unique Resource PIN</label>
+                <div className="flex gap-3 mt-2">
                   <input
                     type="text"
-                    placeholder="Auto-generate or enter existing"
+                    placeholder="Auto-generate for new partners"
                     value={formData.farmerId}
                     onChange={(e) => setFormData(prev => ({ ...prev, farmerId: e.target.value }))}
-                    className="flex-1 px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all font-semibold text-gray-900 placeholder-gray-400"
+                    className="flex-1 px-5 py-4 bg-emerald-50/30 border-2 border-dashed border-emerald-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 transition-all font-mono font-bold text-emerald-700"
                   />
                   <Button
                     onClick={generateFarmerId}
-                    variant="outline"
-                    className="px-4 border-2 border-blue-600 text-blue-700 hover:bg-blue-50 font-semibold"
+                    className="px-6 h-auto rounded-2xl bg-white border border-emerald-200 text-emerald-600 font-black text-[10px] tracking-widest hover:bg-emerald-50"
                   >
-                    Generate
+                    GENERATE
                   </Button>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Section 2: Herb Details */}
-          <div className="bg-white rounded-xl p-5 sm:p-6 shadow-md border-l-4 border-green-600">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
-              <Leaf size={20} className="text-green-600" />
-              Herb Details
-            </h2>
+          {/* Section 2: Botanical Details */}
+          <div className="bg-white/70 backdrop-blur-xl rounded-[2.5rem] p-8 border border-white shadow-sm">
+            <div className="flex items-center gap-3 mb-8">
+               <div className="w-2 h-8 bg-teal-600 rounded-full"></div>
+               <h2 className="text-xl font-black text-emerald-950 tracking-tight">Botanical Inventory</h2>
+            </div>
 
-            <div className="space-y-4">
-              {/* Herb Name */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Select Herb Name *</label>
+                <label className="text-sm font-bold text-emerald-950 ml-1">Select Botanical Herb *</label>
                 <select
                   value={formData.herbName}
                   onChange={(e) => setFormData(prev => ({ ...prev, herbName: e.target.value }))}
-                  className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all font-semibold text-gray-900"
+                  className="w-full mt-2 px-5 py-4 bg-white border border-emerald-100 rounded-2xl transition-all font-bold text-emerald-950 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_1.25rem_center] bg-[size:1.5em_1.5em] bg-no-repeat"
                 >
-                  <option value="">Choose an herb...</option>
+                  <option value="">Inventory selection...</option>
                   {herbs.map(herb => (
                     <option key={herb} value={herb}>{herb}</option>
                   ))}
                 </select>
               </div>
 
-              {/* Local Name */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Local Name (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="Regional or local name"
-                  value={formData.localName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, localName: e.target.value }))}
-                  className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all font-semibold text-gray-900 placeholder-gray-400"
-                />
-              </div>
-
-              {/* Part Used */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Part Used *</label>
+                <label className="text-sm font-bold text-emerald-950 ml-1">Anatomical Part Used *</label>
                 <select
                   value={formData.partUsed}
                   onChange={(e) => setFormData(prev => ({ ...prev, partUsed: e.target.value }))}
-                  className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all font-semibold text-gray-900"
+                  className="w-full mt-2 px-5 py-4 bg-white border border-emerald-100 rounded-2xl transition-all font-bold text-emerald-950 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_1.25rem_center] bg-[size:1.5em_1.5em] bg-no-repeat"
                 >
                   <option value="">Choose part...</option>
                   {partsUsed.map(part => (
@@ -385,205 +373,144 @@ const CreateBatchForFarmerComponent = ({ collectorName, collectorId, onBatchCrea
                   ))}
                 </select>
               </div>
-            </div>
-          </div>
 
-          {/* Section 3: Quantity */}
-          <div className="bg-white rounded-xl p-5 sm:p-6 shadow-md border-l-4 border-amber-600">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
-              <Box size={20} className="text-amber-600" />
-              Quantity
-            </h2>
-
-            <div className="flex gap-3">
-              <input
-                type="number"
-                placeholder="Enter quantity"
-                value={formData.quantity}
-                onChange={(e) => setFormData(prev => ({ ...prev, quantity: e.target.value }))}
-                className="flex-1 px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all font-semibold text-gray-900 placeholder-gray-400"
-              />
-              <select
-                value={formData.unit}
-                onChange={(e) => setFormData(prev => ({ ...prev, unit: e.target.value as 'kg' | 'grams' }))}
-                className="px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all font-semibold text-gray-900"
-              >
-                <option value="kg">kg</option>
-                <option value="grams">grams</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Section 4: Harvest Details */}
-          <div className="bg-white rounded-xl p-5 sm:p-6 shadow-md border-l-4 border-purple-600">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
-              <Calendar size={20} className="text-purple-600" />
-              Harvest Details
-            </h2>
-
-            <div className="space-y-4">
-              {/* Harvest Date */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Harvest Date *</label>
-                <input
-                  type="date"
-                  value={formData.harvestDate}
-                  onChange={(e) => setFormData(prev => ({ ...prev, harvestDate: e.target.value }))}
-                  className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all font-semibold text-gray-900"
-                />
-              </div>
-
-              {/* Harvest Type */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Harvest Type *</label>
-                <div className="flex gap-3">
-                  {harvestTypes.map(type => (
-                    <button
-                      key={type}
-                      onClick={() => setFormData(prev => ({ ...prev, harvestType: type.toLowerCase().includes('wild') ? 'wild' : 'cultivated' }))}
-                      className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
-                        (type.toLowerCase().includes('wild') && formData.harvestType === 'wild') ||
-                        (type.toLowerCase().includes('cultivated') && formData.harvestType === 'cultivated')
-                          ? 'bg-blue-600 text-white shadow-lg'
-                          : 'bg-gray-100 text-gray-700 border-2 border-gray-200'
-                      }`}
-                    >
-                      {type}
-                    </button>
-                  ))}
+                <label className="text-sm font-bold text-emerald-950 ml-1">Quantity Manifest *</label>
+                <div className="flex gap-3 mt-2">
+                  <input
+                    type="number"
+                    placeholder="0.00"
+                    value={formData.quantity}
+                    onChange={(e) => setFormData(prev => ({ ...prev, quantity: e.target.value }))}
+                    className="flex-1 px-5 py-4 bg-white border border-emerald-100 rounded-2xl transition-all font-black text-emerald-950"
+                  />
+                  <select
+                    value={formData.unit}
+                    onChange={(e) => setFormData(prev => ({ ...prev, unit: e.target.value as 'kg' | 'grams' }))}
+                    className="px-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase"
+                  >
+                    <option value="kg">KG</option>
+                    <option value="grams">G</option>
+                  </select>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Section 5: Location */}
-          <div className="bg-white rounded-xl p-5 sm:p-6 shadow-md border-l-4 border-red-600">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
-              <MapPin size={20} className="text-red-600" />
-              Location
-            </h2>
-
-            {formData.latitude && formData.longitude ? (
-              <div className="space-y-3">
-                <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-300">
-                  <p className="text-sm text-gray-600 font-semibold uppercase">GPS Coordinates</p>
-                  <p className="text-lg font-bold text-blue-700">{formData.latitude}, {formData.longitude}</p>
-                </div>
-                <Button
-                  onClick={captureLocation}
-                  variant="outline"
-                  className="w-full h-11 border-2 border-red-600 text-red-700 hover:bg-red-50 font-semibold"
-                >
-                  📍 Recapture Location
-                </Button>
-              </div>
-            ) : (
-              <Button
-                onClick={captureLocation}
-                className="w-full h-11 bg-red-600 hover:bg-red-700 text-white font-semibold"
-              >
-                📍 Capture Location
-              </Button>
-            )}
-          </div>
-
-          {/* Section 6: Image Proof */}
-          <div className="bg-white rounded-xl p-5 sm:p-6 shadow-md border-l-4 border-orange-600">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
-              <Camera size={20} className="text-orange-600" />
-              Image Proof (CRITICAL)
-            </h2>
-
-            {!cameraActive ? (
-              <>
-                {formData.imageUrl ? (
-                  <div className="space-y-3">
-                    <div className="relative w-full rounded-lg overflow-hidden shadow-md">
-                      <img src={formData.imageUrl} alt="Captured" className="w-full h-64 object-cover" />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => { setFormData(prev => ({ ...prev, imageUrl: '' })); startCamera(); }}
-                        variant="outline"
-                        className="flex-1 border-2 border-orange-600 text-orange-700 hover:bg-orange-50 font-semibold"
+              <div>
+                <label className="text-sm font-bold text-emerald-950 ml-1">Culitivation Protocol *</label>
+                <div className="flex gap-3 mt-2">
+                  {harvestTypes.map(type => {
+                    const isSelected = (type.toLowerCase().includes('wild') && formData.harvestType === 'wild') ||
+                                     (type.toLowerCase().includes('cultivated') && formData.harvestType === 'cultivated');
+                    return (
+                      <button
+                        key={type}
+                        onClick={() => setFormData(prev => ({ ...prev, harvestType: type.toLowerCase().includes('wild') ? 'wild' : 'cultivated' }))}
+                        className={`flex-1 py-4 px-4 rounded-2xl font-black text-[10px] tracking-widest transition-all ${
+                          isSelected ? 'bg-emerald-600 text-white shadow-lg' : 'bg-white text-emerald-900 border border-emerald-100 hover:border-emerald-300'
+                        }`}
                       >
-                        Retake Photo
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <Button
-                    onClick={startCamera}
-                    className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white font-semibold text-base"
-                  >
-                    📷 Capture Live Photo
-                  </Button>
-                )}
-              </>
-            ) : (
-              <div className="space-y-3">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  className="w-full rounded-lg bg-black"
-                />
-                <div className="flex gap-2">
-                  <Button
-                    onClick={capturePhoto}
-                    className="flex-1 h-11 bg-green-600 hover:bg-green-700 text-white font-semibold"
-                  >
-                    ✓ Take Photo
-                  </Button>
-                  <Button
-                    onClick={stopCamera}
-                    variant="outline"
-                    className="flex-1 h-11 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold"
-                  >
-                    Cancel
-                  </Button>
+                        {type.toUpperCase()}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-            )}
-            <canvas ref={canvasRef} className="hidden" />
-          </div>
-
-          {/* Section 7: Storage Info */}
-          <div className="bg-white rounded-xl p-5 sm:p-6 shadow-md border-l-4 border-teal-600">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
-              <FileText size={20} className="text-teal-600" />
-              Storage Info
-            </h2>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Storage Type *</label>
-              <select
-                value={formData.storageType}
-                onChange={(e) => setFormData(prev => ({ ...prev, storageType: e.target.value }))}
-                className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all font-semibold text-gray-900"
-              >
-                <option value="">Select storage type...</option>
-                {storageTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
             </div>
           </div>
 
-          {/* Submit Buttons */}
-          <div className="flex gap-3 sticky bottom-0 bg-gradient-to-t from-blue-50 to-transparent pt-4 pb-4">
+          {/* Section 3: Geographic Proof */}
+          <div className="bg-white/70 backdrop-blur-xl rounded-[2.5rem] p-8 border border-white shadow-sm">
+            <div className="flex items-center gap-3 mb-8">
+               <div className="w-2 h-8 bg-sky-600 rounded-full"></div>
+               <h2 className="text-xl font-black text-emerald-950 tracking-tight">Geographic & Visual Payload</h2>
+            </div>
+
+            <div className="space-y-6">
+               <div className="bg-slate-900 rounded-[2rem] p-6 text-white relative overflow-hidden group">
+                  <div className="flex items-center justify-between relative z-10">
+                     <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center">
+                           <MapPin className="text-sky-400" />
+                        </div>
+                        <div>
+                           <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">GPS Vector Lock</p>
+                           <p className="text-sm font-mono font-bold mt-1">
+                              {formData.latitude ? `${formData.latitude}, ${formData.longitude}` : 'NO COORDINATES RECORDED'}
+                           </p>
+                        </div>
+                     </div>
+                     <Button 
+                        onClick={captureLocation}
+                        className="bg-white text-slate-950 hover:bg-sky-400 hover:text-white font-black text-[10px] tracking-widest rounded-xl px-6 h-11"
+                     >
+                        SCAN VECTOR
+                     </Button>
+                  </div>
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/10 blur-3xl rounded-full"></div>
+               </div>
+
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-white border border-emerald-100 rounded-[2rem] p-6 flex flex-col items-center justify-center gap-4 min-h-[200px] relative overflow-hidden group">
+                     {!cameraActive ? (
+                        <>
+                           {formData.imageUrl ? (
+                              <div className="absolute inset-0 z-0">
+                                 <img src={formData.imageUrl} className="w-full h-full object-cover" alt="harvest" />
+                                 <div className="absolute inset-0 bg-black/40 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <Button onClick={startCamera} className="bg-white text-black font-black text-xs h-10 px-6 rounded-xl">RETAKE</Button>
+                                 </div>
+                              </div>
+                           ) : (
+                              <div className="flex flex-col items-center gap-4">
+                                 <Camera className="w-12 h-12 text-emerald-100" />
+                                 <Button onClick={startCamera} className="bg-emerald-600 text-white font-black text-[10px] tracking-widest h-12 px-8 rounded-2xl shadow-lg">START OPTICAL FEED</Button>
+                              </div>
+                           )}
+                        </>
+                     ) : (
+                        <div className="absolute inset-0 z-30 flex flex-col">
+                           <video ref={videoRef} autoPlay playsInline className="w-full flex-1 object-cover" />
+                           <div className="p-4 bg-slate-950/80 backdrop-blur-md flex gap-2">
+                              <Button onClick={capturePhoto} className="flex-1 bg-white text-black font-black text-xs h-12 rounded-2xl">CAPTURE PAYLOAD</Button>
+                              <Button onClick={stopCamera} variant="outline" className="text-white border-white/20 h-12 rounded-2xl font-black text-xs">CANCEL</Button>
+                           </div>
+                        </div>
+                     )}
+                     <canvas ref={canvasRef} className="hidden" />
+                  </div>
+
+                  <div className="bg-white border border-emerald-100 rounded-[2rem] p-8">
+                     <label className="text-sm font-bold text-emerald-950 ml-1">Storage Node Protocol</label>
+                     <div className="mt-4 grid grid-cols-2 gap-2">
+                        {storageTypes.map(type => (
+                           <button
+                              key={type}
+                              onClick={() => setFormData(prev => ({ ...prev, storageType: type }))}
+                              className={`p-3 rounded-xl text-[9px] font-black tracking-widest transition-all ${
+                                 formData.storageType === type ? 'bg-slate-900 text-white shadow-xl' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                              }`}
+                           >
+                              {type.toUpperCase()}
+                           </button>
+                        ))}
+                     </div>
+                  </div>
+               </div>
+            </div>
+          </div>
+
+          {/* Action Footer */}
+          <div className="pt-10 flex gap-4">
             <Button
               onClick={submitBatch}
               disabled={isLoading}
-              className="flex-1 h-13 bg-blue-700 hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-base rounded-xl shadow-lg"
+              className="flex-1 h-20 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-black text-lg rounded-[2rem] shadow-2xl shadow-emerald-600/20 tracking-tight"
             >
-              {isLoading ? 'Processing...' : '✓ Create Batch'}
-            </Button>
-            <Button
-              variant="outline"
-              className="flex-1 h-13 border-2 border-blue-700 text-blue-700 hover:bg-blue-50 font-bold text-base rounded-xl"
-            >
-              💾 Save Draft
+              {isLoading ? (
+                <div className="flex items-center gap-3">
+                   <Loader className="animate-spin" /> VERIFYING LEDGER...
+                </div>
+              ) : '✓ EXECUTE BATCH REGISTRATION'}
             </Button>
           </div>
         </div>
@@ -593,128 +520,52 @@ const CreateBatchForFarmerComponent = ({ collectorName, collectorId, onBatchCrea
 
   // Success Step
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-amber-50 to-blue-50 flex flex-col items-center justify-center p-4">
-      <div className="max-w-md w-full">
-        {/* Success Animation */}
+    <div className="min-h-[80vh] flex items-center justify-center p-8">
+      <div className="max-w-md w-full animate-in zoom-in-95 duration-700">
         {isLoading ? (
-          <div className="text-center space-y-6">
-            <div className="flex justify-center">
-              <div className="relative w-20 h-20">
-                <div className="absolute inset-0 bg-blue-100 rounded-full animate-pulse" />
-                <div className="absolute inset-2 bg-white rounded-full flex items-center justify-center">
-                  <Loader size={40} className="text-blue-600 animate-spin" />
-                </div>
-              </div>
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">AI Verification in Progress...</h2>
-              <p className="text-gray-600 text-sm mt-2">Analyzing herb quality and authenticity</p>
-            </div>
+          <div className="text-center space-y-8">
+             <div className="w-24 h-24 rounded-[2.5rem] bg-white border-4 border-emerald-100 shadow-2xl mx-auto flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 bg-emerald-500/10 animate-pulse"></div>
+                <Loader size={40} className="text-emerald-600 animate-spin relative z-10" />
+             </div>
+             <div>
+                <h2 className="text-2xl font-black text-emerald-950 tracking-tight">Traceability Algorithm Active</h2>
+                <p className="text-emerald-600/70 font-bold mt-2 uppercase tracking-widest text-[10px]">Verifying botanical signature & GPS lock</p>
+             </div>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl border-2 border-blue-200 space-y-6 text-center">
-            {/* Success Icon */}
-            <div className="flex justify-center">
-              <div className="relative w-24 h-24">
-                <div className="absolute inset-0 bg-blue-100 rounded-full animate-pulse" />
-                <div className="absolute inset-0 bg-blue-200 rounded-full flex items-center justify-center">
-                  <CheckCircle size={48} className="text-blue-700" />
-                </div>
-              </div>
+          <div className="bg-white border-4 border-emerald-950 rounded-[3rem] shadow-[0_32px_64px_-16px_rgba(20,40,20,0.3)] overflow-hidden relative">
+            <div className="bg-emerald-950 p-8 text-center">
+               <div className="w-16 h-16 rounded-2xl bg-emerald-500 mx-auto flex items-center justify-center mb-6">
+                  <CheckCircle size={32} className="text-white" />
+               </div>
+               <h1 className="text-2xl font-black text-white tracking-tight">Manifest Verified</h1>
+               <p className="text-emerald-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-2">Cryptographic batch id issued</p>
             </div>
 
-            {/* Success Message */}
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Batch Created Successfully!</h1>
-              <p className="text-blue-700 text-sm mt-2">Herb batch registered and linked to farmer profile</p>
-            </div>
+            <div className="p-8 space-y-6">
+               <div className="bg-slate-50 p-6 rounded-[2rem] border-2 border-dashed border-slate-200 text-center">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Batch Identifier</p>
+                  <p className="text-lg font-mono font-black text-emerald-900 break-all">{batchId}</p>
+               </div>
 
-            {/* Batch ID */}
-            <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
-              <p className="text-xs text-gray-600 font-semibold uppercase">Batch ID</p>
-              <p className="text-2xl font-bold text-blue-700 font-mono break-all">{batchId}</p>
-            </div>
+               <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+                     <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Integrity Rank</p>
+                     <p className="text-2xl font-black text-emerald-950 mt-1">{trustScore}%</p>
+                  </div>
+                  <div className="p-4 bg-teal-50 rounded-2xl border border-teal-100">
+                     <p className="text-[9px] font-black text-teal-600 uppercase tracking-widest">Quantity</p>
+                     <p className="text-2xl font-black text-emerald-950 mt-1">{formData.quantity}{formData.unit}</p>
+                  </div>
+               </div>
 
-            {/* Farmer Info */}
-            <div className="bg-amber-50 p-4 rounded-xl border-2 border-amber-200">
-              <p className="text-xs text-gray-600 font-semibold uppercase mb-2">Farmer Details</p>
-              <div className="space-y-1 text-left">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Name:</span>
-                  <span className="font-bold text-gray-900">{formData.farmerName}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Village:</span>
-                  <span className="font-bold text-gray-900">{formData.farmerVillage}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Trust Score */}
-            <div className="bg-gradient-to-r from-green-50 to-teal-50 p-4 rounded-xl border-2 border-green-200">
-              <p className="text-xs text-gray-600 font-semibold uppercase mb-2">Verification Score</p>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 bg-gray-200 h-3 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-green-400 to-teal-500 transition-all duration-1000"
-                    style={{ width: `${trustScore}%` }}
-                  />
-                </div>
-                <span className="text-2xl font-bold text-green-600">{trustScore}%</span>
-              </div>
-              <p className="text-xs text-gray-600 mt-2">AI Verified Authenticity</p>
-            </div>
-
-            {/* Submission Details */}
-            <div className="bg-gray-50 p-4 rounded-xl space-y-2 text-left text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Herb:</span>
-                <span className="font-bold text-gray-900">{formData.herbName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Quantity:</span>
-                <span className="font-bold text-gray-900">{formData.quantity} {formData.unit}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Collected by:</span>
-                <span className="font-bold text-gray-900">{collectorName}</span>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-3">
-              <Button
-                onClick={() => {
-                  setStep('form');
-                  setFormData({
-                    farmerName: '',
-                    farmerMobile: '',
-                    farmerVillage: '',
-                    farmerId: '',
-                    herbName: '',
-                    localName: '',
-                    partUsed: '',
-                    quantity: '',
-                    unit: 'kg',
-                    harvestDate: new Date().toISOString().split('T')[0],
-                    harvestType: 'cultivated',
-                    latitude: '',
-                    longitude: '',
-                    locationName: 'Fetching location...',
-                    imageUrl: '',
-                    storageType: ''
-                  });
-                }}
-                className="flex-1 h-12 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl"
-              >
-                + Create Another
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-1 h-12 border-2 border-blue-700 text-blue-700 hover:bg-blue-50 font-bold rounded-xl"
-              >
-                View Dashboard
-              </Button>
+               <Button
+                  onClick={() => setStep('form')}
+                  className="w-full h-16 bg-slate-900 hover:bg-black text-white font-black text-sm tracking-widest rounded-[1.5rem] mt-4"
+               >
+                  NEW INTAKE CYCLE
+               </Button>
             </div>
           </div>
         )}

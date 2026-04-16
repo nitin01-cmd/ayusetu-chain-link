@@ -429,278 +429,235 @@ const AggregatorView = ({ userId }: AggregatorViewProps) => {
         </DialogContent>
       </Dialog>
 
-      {activeForm === 'createLot' && (
-        <Card className="gov-card animate-fade-in">
-          <div className="gov-card-header">
-            <h3 className="text-lg font-semibold">Create Lot (Aggregation & Grading)</h3>
-          </div>
-
-          {/* Batch Input Method Selection */}
-          <div className="mb-6">
-            <Label className="text-base font-medium">Batch ID Input Method</Label>
-            <div className="flex space-x-4 mt-2">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name="batchScanMethod"
-                  value="manual"
-                  checked={formData.batchScanMethod === 'manual'}
-                  onChange={(e) => setFormData({...formData, batchScanMethod: e.target.value, batchQR: ''})}
-                />
-                <span>Manual Entry</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name="batchScanMethod"
-                  value="scan"
-                  checked={formData.batchScanMethod === 'scan'}
-                  onChange={(e) => setFormData({...formData, batchScanMethod: e.target.value, batchId: ''})}
-                />
-                <span>QR Code Scan</span>
-              </label>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {formData.batchScanMethod === 'manual' ? (
-              <div>
-                <Label htmlFor="batchId">Batch ID</Label>
-                <Input
-                  id="batchId"
-                  value={formData.batchId}
-                  onChange={(e) => setFormData({...formData, batchId: e.target.value})}
-                  placeholder="Enter batch ID manually"
-                  className="gov-input"
-                />
-              </div>
-            ) : (
-              <div>
-                <Label htmlFor="batchQR">Batch QR Code</Label>
-                <div className="flex space-x-2">
-                  <Input
-                    id="batchQR"
-                    value={formData.batchQR}
-                    onChange={(e) => setFormData({...formData, batchQR: e.target.value})}
-                    placeholder="QR code result will appear here"
-                    className="gov-input"
-                    readOnly
-                  />
-                  <Button 
-                    type="button" 
-                    onClick={() => simulateQRScan('batch')} 
-                    className="btn-secondary"
-                  >
-                    Scan QR
-                  </Button>
+      <Dialog open={activeForm === 'createLot'} onOpenChange={(open) => !open && setActiveForm(null)}>
+        <DialogContent className="sm:max-w-2xl bg-white/95 backdrop-blur-2xl border border-emerald-200/60 rounded-[2.5rem] p-0 overflow-hidden shadow-2xl">
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 px-8 py-6 border-b border-emerald-100">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-black text-emerald-950 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                  <Layers className="text-emerald-600 w-5 h-5" />
                 </div>
-              </div>
-            )}
-
-            <div>
-              <Label htmlFor="lotWeight">Total Lot Weight (kg) *</Label>
-              <Input
-                id="lotWeight"
-                type="number"
-                step="0.1"
-                value={formData.lotWeight}
-                onChange={(e) => setFormData({...formData, lotWeight: e.target.value})}
-                placeholder="Enter total weight"
-                className="gov-input"
-                required
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="grade">Grade *</Label>
-              <select
-                id="grade"
-                value={formData.grade}
-                onChange={(e) => setFormData({...formData, grade: e.target.value})}
-                className="gov-select"
-                required
-              >
-                <option value="">Select grade</option>
-                <option value="A">Grade A - Premium</option>
-                <option value="B">Grade B - Standard</option>
-                <option value="C">Grade C - Basic</option>
-              </select>
-            </div>
-            
-            <div>
-              <Label htmlFor="moistureEstimate">Moisture Estimate (%)</Label>
-              <Input
-                id="moistureEstimate"
-                type="number"
-                step="0.1"
-                value={formData.moistureEstimate}
-                onChange={(e) => setFormData({...formData, moistureEstimate: e.target.value})}
-                placeholder="Enter moisture percentage"
-                className="gov-input"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <Label htmlFor="batchConditionPhotos">Batch Condition Photos (JPG/PNG)</Label>
-              <input
-                type="file"
-                id="batchConditionPhotos"
-                multiple
-                accept=".jpg,.jpeg,.png"
-                onChange={(e) => handlePhotoUpload('batch', e.target.files)}
-                className="gov-input"
-              />
-              {formData.batchConditionPhotos.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-sm text-muted-foreground">
-                    Uploaded: {formData.batchConditionPhotos.join(', ')}
-                  </p>
-                </div>
-              )}
-            </div>
+                Create Consolidated Lot
+              </DialogTitle>
+            </DialogHeader>
           </div>
           
-          <div className="flex space-x-4 mt-6">
-            <Button onClick={handleCreateLot} className="btn-government">
-              Create Lot
-            </Button>
-            <Button onClick={() => setActiveForm(null)} variant="outline">
-              Cancel
-            </Button>
-          </div>
-        </Card>
-      )}
+          <div className="p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <Label className="text-sm font-bold text-emerald-950 ml-1">Input Sequence</Label>
+                <div className="flex gap-4 mt-2">
+                  <button 
+                    onClick={() => setFormData({...formData, batchScanMethod: 'manual', batchQR: ''})}
+                    className={`flex-1 py-3 px-4 rounded-xl border text-[10px] font-black tracking-widest transition-all ${formData.batchScanMethod === 'manual' ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg' : 'bg-white border-emerald-100 text-emerald-900'}`}
+                  >
+                    MANUAL ENTRY
+                  </button>
+                  <button 
+                    onClick={() => setFormData({...formData, batchScanMethod: 'scan', batchId: ''})}
+                    className={`flex-1 py-3 px-4 rounded-xl border text-[10px] font-black tracking-widest transition-all ${formData.batchScanMethod === 'scan' ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg' : 'bg-white border-emerald-100 text-emerald-900'}`}
+                  >
+                    QR SCAN
+                  </button>
+                </div>
+              </div>
 
-      {activeForm === 'transport' && (
-        <Card className="gov-card animate-fade-in">
-          <div className="gov-card-header">
-            <h3 className="text-lg font-semibold">Start Transport</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="waybillId">Waybill/Manifest ID *</Label>
-              <Input
-                id="waybillId"
-                value={formData.waybillId}
-                onChange={(e) => setFormData({...formData, waybillId: e.target.value})}
-                placeholder="Enter waybill ID"
-                className="gov-input"
-                required
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="sealId">Seal ID *</Label>
-              <Input
-                id="sealId"
-                value={formData.sealId}
-                onChange={(e) => setFormData({...formData, sealId: e.target.value})}
-                placeholder="Enter seal ID"
-                className="gov-input"
-                required
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <Label htmlFor="sealPhoto">Seal Photo (JPG/PNG)</Label>
-              <input
-                type="file"
-                id="sealPhoto"
-                accept=".jpg,.jpeg,.png"
-                onChange={(e) => handlePhotoUpload('seal', e.target.files)}
-                className="gov-input"
-              />
-              {formData.sealPhoto && (
-                <div className="mt-2">
-                  <p className="text-sm text-muted-foreground">
-                    Uploaded: {formData.sealPhoto}
-                  </p>
+              {formData.batchScanMethod === 'manual' ? (
+                <div>
+                  <Label htmlFor="batchId" className="text-emerald-950 font-bold ml-1">Batch ID</Label>
+                  <Input
+                    id="batchId"
+                    value={formData.batchId}
+                    onChange={(e) => setFormData({...formData, batchId: e.target.value})}
+                    placeholder="e.g. BATCH-1001"
+                    className="mt-1.5 h-12 bg-white"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <Label htmlFor="batchQR" className="text-emerald-950 font-bold ml-1">Scan Result</Label>
+                  <div className="flex space-x-2 mt-1.5">
+                    <Input
+                      id="batchQR"
+                      value={formData.batchQR}
+                      className="h-12 bg-white font-mono"
+                      readOnly
+                    />
+                    <Button onClick={() => simulateQRScan('batch')} className="h-12 bg-emerald-100 text-emerald-800 font-bold px-6">
+                      Scan
+                    </Button>
+                  </div>
                 </div>
               )}
-            </div>
-            
-            <div>
-              <Label htmlFor="driverId">Driver ID</Label>
-              <Input
-                id="driverId"
-                value={formData.driverId}
-                onChange={(e) => setFormData({...formData, driverId: e.target.value})}
-                placeholder="Enter driver ID"
-                className="gov-input"
-              />
-            </div>
-            <div>
-              <Label htmlFor="vehicleNumber">Vehicle Number *</Label>
-              <Input
-                id="vehicleNumber"
-                value={formData.vehicleNumber}
-                onChange={(e) => setFormData({...formData, vehicleNumber: e.target.value})}
-                placeholder="Enter vehicle number"
-                className="gov-input"
-                required
-              />
-            </div>
-          </div>
-          <div className="flex space-x-4 mt-6">
-            <Button onClick={handleStartTransport} className="btn-government">
-              Start Transport
-            </Button>
-            <Button onClick={() => setActiveForm(null)} variant="outline">
-              Cancel
-            </Button>
-          </div>
-        </Card>
-      )}
 
-      {activeForm === 'recall' && (
-        <Card className="gov-card animate-fade-in">
-          <div className="gov-card-header">
-            <h3 className="text-lg font-semibold">Initiate Product Recall</h3>
-          </div>
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <Label htmlFor="recallBatchId">Batch ID to Recall *</Label>
-              <Input
-                id="recallBatchId"
-                value={formData.recallBatchId}
-                onChange={(e) => setFormData({...formData, recallBatchId: e.target.value})}
-                placeholder="Enter batch ID for recall"
-                className="gov-input"
-                required
-              />
+              <div>
+                <Label htmlFor="lotWeight" className="text-emerald-950 font-bold ml-1">Total Weight (kg)</Label>
+                <Input
+                  id="lotWeight"
+                  type="number"
+                  value={formData.lotWeight}
+                  onChange={(e) => setFormData({...formData, lotWeight: e.target.value})}
+                  className="mt-1.5 h-12 bg-white"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="grade" className="text-emerald-950 font-bold ml-1">Botanical Grade</Label>
+                <select
+                  id="grade"
+                  value={formData.grade}
+                  onChange={(e) => setFormData({...formData, grade: e.target.value})}
+                  className="w-full mt-1.5 h-12 rounded-xl border border-emerald-200 px-4 bg-white font-bold text-emerald-950"
+                >
+                  <option value="">Select grading...</option>
+                  <option value="A">Premium (A+)</option>
+                  <option value="B">Standard (B)</option>
+                  <option value="C">Basic (C)</option>
+                </select>
+              </div>
+              
+              <div>
+                <Label htmlFor="moistureEstimate" className="text-emerald-950 font-bold ml-1">Moisture (%)</Label>
+                <Input
+                  id="moistureEstimate"
+                  type="number"
+                  value={formData.moistureEstimate}
+                  onChange={(e) => setFormData({...formData, moistureEstimate: e.target.value})}
+                  className="mt-1.5 h-12 bg-white"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <Button onClick={handleCreateLot} className="w-full h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs tracking-widest shadow-xl shadow-emerald-600/20 mt-4">
+                  GENERATE LOT MANIFEST
+                </Button>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="recallReason">Recall Reason *</Label>
-              <textarea
-                id="recallReason"
-                value={formData.recallReason}
-                onChange={(e) => setFormData({...formData, recallReason: e.target.value})}
-                placeholder="Describe the reason for recall"
-                className="gov-input min-h-[100px] resize-vertical"
-                required
-              />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={activeForm === 'transport'} onOpenChange={(open) => !open && setActiveForm(null)}>
+        <DialogContent className="sm:max-w-2xl bg-white/95 backdrop-blur-2xl border border-emerald-200/60 rounded-[2.5rem] p-0 overflow-hidden shadow-2xl">
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 px-8 py-6 border-b border-emerald-100">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-black text-emerald-950 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                  <Truck className="text-emerald-600 w-5 h-5" />
+                </div>
+                Logistics Initiation
+              </DialogTitle>
+            </DialogHeader>
+          </div>
+          
+          <div className="p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="waybillId" className="text-emerald-950 font-bold ml-1">Waybill Identifier</Label>
+                <Input
+                  id="waybillId"
+                  value={formData.waybillId}
+                  onChange={(e) => setFormData({...formData, waybillId: e.target.value})}
+                  placeholder="WB-XXXXXX"
+                  className="mt-1.5 h-12 bg-white"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="sealId" className="text-emerald-950 font-bold ml-1">Security Seal ID</Label>
+                <Input
+                  id="sealId"
+                  value={formData.sealId}
+                  onChange={(e) => setFormData({...formData, sealId: e.target.value})}
+                  placeholder="SEAL-XXXXXX"
+                  className="mt-1.5 h-12 bg-white"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="vehicleNumber" className="text-emerald-950 font-bold ml-1">Vehicle Plate Number</Label>
+                <Input
+                  id="vehicleNumber"
+                  value={formData.vehicleNumber}
+                  onChange={(e) => setFormData({...formData, vehicleNumber: e.target.value})}
+                  placeholder="KA-01-XXXX"
+                  className="mt-1.5 h-12 bg-white"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="driverId" className="text-emerald-950 font-bold ml-1">Operator/Driver ID</Label>
+                <Input
+                  id="driverId"
+                  value={formData.driverId}
+                  onChange={(e) => setFormData({...formData, driverId: e.target.value})}
+                  className="mt-1.5 h-12 bg-white"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <Button onClick={handleStartTransport} className="w-full h-14 rounded-2xl bg-slate-900 hover:bg-black text-white font-black text-xs tracking-widest shadow-xl mt-4">
+                  INITIATE FLEET DEPLOYMENT
+                </Button>
+              </div>
             </div>
           </div>
-          <div className="flex space-x-4 mt-6">
-            <Button onClick={handleInitiateRecall} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Initiate Recall
-            </Button>
-            <Button onClick={() => setActiveForm(null)} variant="outline">
-              Cancel
-            </Button>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={activeForm === 'recall'} onOpenChange={(open) => !open && setActiveForm(null)}>
+        <DialogContent className="sm:max-w-xl bg-white/95 backdrop-blur-2xl border border-red-200/60 rounded-[2rem] p-0 overflow-hidden shadow-2xl">
+          <div className="bg-gradient-to-br from-red-50 to-orange-50 px-8 py-6 border-b border-red-100">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-black text-red-950 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                  <AlertTriangle className="text-red-600 w-5 h-5" />
+                </div>
+                Critical Recall Protocol
+              </DialogTitle>
+            </DialogHeader>
           </div>
-        </Card>
-      )}
+          
+          <div className="p-8">
+            <div className="space-y-6">
+              <div>
+                <Label htmlFor="recallBatchId" className="text-red-950 font-bold ml-1">Target Batch ID</Label>
+                <Input
+                  id="recallBatchId"
+                  value={formData.recallBatchId}
+                  onChange={(e) => setFormData({...formData, recallBatchId: e.target.value})}
+                  className="mt-1.5 h-12 bg-white border-red-100"
+                />
+              </div>
+              <div>
+                <Label htmlFor="recallReason" className="text-red-950 font-bold ml-1">Root Cause Analysis</Label>
+                <textarea
+                  id="recallReason"
+                  value={formData.recallReason}
+                  onChange={(e) => setFormData({...formData, recallReason: e.target.value})}
+                  className="w-full mt-1.5 p-4 rounded-xl border border-red-100 bg-white font-medium text-slate-800 min-h-[120px]"
+                  placeholder="Detail the discrepancy..."
+                />
+              </div>
+              <Button onClick={handleInitiateRecall} className="w-full h-14 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-black text-xs tracking-widest shadow-xl shadow-red-600/20">
+                EXECUTE SYSTEM-WIDE RECALL
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={activeForm === 'createBatchForFarmer'} onOpenChange={(open) => !open && setActiveForm(null)}>
-        <DialogContent className="sm:max-w-4xl bg-white border border-emerald-200/60 rounded-3xl p-6 shadow-2xl h-[90vh] overflow-y-auto">
-          <CreateBatchForFarmerComponent 
-            collectorName="Current Collector"
-            collectorId={userId}
-            onBatchCreated={(batchId, farmerId) => {
-              setActiveForm(null);
-            }}
-          />
+        <DialogContent className="sm:max-w-4xl bg-white/95 backdrop-blur-2xl border border-emerald-200/60 rounded-[2.5rem] p-0 overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
+          <div className="flex-1 overflow-y-auto">
+            <CreateBatchForFarmerComponent 
+              collectorName="Senior Field Aggregator"
+              collectorId={userId}
+              onBatchCreated={(batchId, farmerId) => {
+                setActiveForm(null);
+              }}
+            />
+          </div>
         </DialogContent>
       </Dialog>
     </div>

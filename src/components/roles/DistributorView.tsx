@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import FarmerDetailsDialog from '@/components/FarmerDetailsDialog';
 import { useBatches } from '@/hooks/useBatches';
+import { Truck, Map, UserCircle, AlertTriangle } from 'lucide-react';
 
 interface DistributorViewProps {
   userId: string;
@@ -117,60 +119,50 @@ const DistributorView = ({ userId }: DistributorViewProps) => {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold gov-heading">Distributor Dashboard</h2>
-          <p className="text-muted-foreground">Manage product dispatch and logistics operations</p>
+          <h2 className="text-3xl font-black text-emerald-950 tracking-tight">Distributor Hub</h2>
+          <p className="text-emerald-700/80 font-medium tracking-wide mt-1">Manage global product dispatch and logistics tracking operations</p>
         </div>
         <div className="flex space-x-4">
-          <Badge className="badge-pending">
+          <Badge className="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border-emerald-200 px-4 py-1.5 rounded-xl font-bold uppercase tracking-widest shadow-sm">
             Ready for Dispatch: {batches.filter(b => b.type === 'final_product' && b.status === 'finalized').length}
           </Badge>
-          <Badge className="badge-verified">
+          <Badge className="bg-teal-100 hover:bg-teal-200 text-teal-800 border-teal-200 px-4 py-1.5 rounded-xl font-bold uppercase tracking-widest shadow-sm">
             Active Shipments: {batches.filter(b => b.status === 'dispatched').length}
           </Badge>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Button 
+      {/* Premium Glass Action Buttons */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        
+        <div 
           onClick={() => setActiveForm('dispatch')}
-          className="btn-government h-auto p-6 flex flex-col items-center space-y-2"
+          className="bg-white/80 backdrop-blur-xl border border-emerald-200/60 shadow-lg shadow-emerald-500/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-emerald-500 hover:border-emerald-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/20 transition-all duration-300 group"
         >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-          </svg>
-          <span>Dispatch Product</span>
-        </Button>
+          <div className="w-12 h-12 rounded-2xl bg-emerald-100/80 flex items-center justify-center text-emerald-600 group-hover:bg-white/20 group-hover:text-white transition-colors">
+            <Truck className="w-6 h-6" strokeWidth={2.5} />
+          </div>
+          <span className="font-bold text-emerald-950 text-xs text-center leading-tight group-hover:text-white transition-colors">Dispatch Product</span>
+        </div>
 
-        <Button 
+        <div 
           onClick={() => setActiveForm('monitor')}
-          className="btn-secondary h-auto p-6 flex flex-col items-center space-y-2"
+          className="bg-white/80 backdrop-blur-xl border border-emerald-200/60 shadow-lg shadow-emerald-500/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-blue-500 hover:border-blue-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/20 transition-all duration-300 group"
         >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <span>Monitor Transport</span>
-        </Button>
+          <div className="w-12 h-12 rounded-2xl bg-blue-100/80 flex items-center justify-center text-blue-600 group-hover:bg-white/20 group-hover:text-white transition-colors">
+            <Map className="w-6 h-6" strokeWidth={2.5} />
+          </div>
+          <span className="font-bold text-emerald-950 text-xs text-center leading-tight group-hover:text-white transition-colors">Monitor Transport Fleet</span>
+        </div>
 
         <FarmerDetailsDialog>
-          <Button className="btn-accent h-auto p-6 flex flex-col items-center space-y-2">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            <span>View Farmer Details</span>
-          </Button>
+          <div className="bg-white/80 backdrop-blur-xl border border-emerald-200/60 shadow-lg shadow-emerald-500/5 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 cursor-pointer h-full hover:bg-purple-500 hover:border-purple-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-purple-500/20 transition-all duration-300 group">
+            <div className="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center text-purple-600 group-hover:bg-white/20 group-hover:text-white transition-colors">
+              <UserCircle className="w-6 h-6" strokeWidth={2.5} />
+            </div>
+            <span className="font-bold text-emerald-950 text-xs text-center leading-tight group-hover:text-white transition-colors">Farmer Database</span>
+          </div>
         </FarmerDetailsDialog>
-
-        <Button 
-          onClick={() => setActiveForm('recall')}
-          className="bg-destructive text-destructive-foreground hover:bg-destructive/90 h-auto p-6 flex flex-col items-center space-y-2"
-        >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-          </svg>
-          <span>Initiate Recall</span>
-        </Button>
       </div>
 
       {/* Final Products Table */}
@@ -253,138 +245,119 @@ const DistributorView = ({ userId }: DistributorViewProps) => {
         </div>
       </Card>
 
-      {/* Forms */}
-      {activeForm === 'dispatch' && (
-        <Card className="gov-card animate-fade-in">
-          <div className="gov-card-header">
-            <h3 className="text-lg font-semibold">Dispatch Product</h3>
+      {/* Dialog Modals */}
+      <Dialog open={activeForm === 'dispatch'} onOpenChange={(open) => !open && setActiveForm(null)}>
+        <DialogContent className="sm:max-w-2xl bg-white/95 backdrop-blur-2xl border border-emerald-200/60 rounded-[2rem] p-0 overflow-y-auto max-h-[90vh] shadow-2xl">
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 px-8 py-6 border-b border-emerald-100 sticky top-0 z-10">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-black text-emerald-950 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                  <Truck className="text-emerald-600 w-5 h-5" />
+                </div>
+                Assign Shipment to Logistics
+              </DialogTitle>
+            </DialogHeader>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="productQR">Product ID</Label>
-              <select
-                id="productQR"
-                value={formData.productQR}
-                onChange={(e) => setFormData({...formData, productQR: e.target.value})}
-                className="gov-select mt-2"
-              >
-                <option value="">Select product to dispatch</option>
-                {availableProducts.map((product) => (
-                  <option key={product.id} value={product.id}>
-                    {product.batch_id} - {product.id}
-                  </option>
-                ))}
-              </select>
+          <div className="p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="md:col-span-2">
+                <Label htmlFor="productQR" className="text-sm font-bold text-emerald-950 ml-1">Target Product *</Label>
+                <select
+                  id="productQR"
+                  value={formData.productQR}
+                  onChange={(e) => setFormData({...formData, productQR: e.target.value})}
+                  className="mt-2 w-full px-4 py-3 rounded-xl border border-emerald-200/60 shadow-sm bg-white"
+                >
+                  <option value="">Select warehoused product</option>
+                  {availableProducts.map((product) => (
+                    <option key={product.id} value={product.id}>
+                      [{product.batch_id}] - {product.id}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label htmlFor="shipmentId" className="text-sm font-bold text-emerald-950 ml-1">Fleet Shipment ID</Label>
+                <Input id="shipmentId" value={formData.shipmentId} onChange={(e) => setFormData({...formData, shipmentId: e.target.value})} placeholder="e.g. TR-9981" className="mt-2 px-4 py-3 h-auto rounded-xl border border-emerald-200/60 shadow-sm" />
+              </div>
+              <div>
+                <Label htmlFor="vehicleNumber" className="text-sm font-bold text-emerald-950 ml-1">Vehicle License</Label>
+                <Input id="vehicleNumber" value={formData.vehicleNumber} onChange={(e) => setFormData({...formData, vehicleNumber: e.target.value})} placeholder="e.g. KA-01-XY-1234" className="mt-2 px-4 py-3 h-auto rounded-xl border border-emerald-200/60 shadow-sm" />
+              </div>
+              <div>
+                <Label htmlFor="driverName" className="text-sm font-bold text-emerald-950 ml-1">Pilot/Driver Name</Label>
+                <Input id="driverName" value={formData.driverName} onChange={(e) => setFormData({...formData, driverName: e.target.value})} placeholder="Driver fullname" className="mt-2 px-4 py-3 h-auto rounded-xl border border-emerald-200/60 shadow-sm" />
+              </div>
+              <div>
+                <Label htmlFor="driverId" className="text-sm font-bold text-emerald-950 ml-1">Driver License ID</Label>
+                <Input id="driverId" value={formData.driverId} onChange={(e) => setFormData({...formData, driverId: e.target.value})} placeholder="DL Number" className="mt-2 px-4 py-3 h-auto rounded-xl border border-emerald-200/60 shadow-sm" />
+              </div>
+              <div className="md:col-span-2">
+                <Label htmlFor="destination" className="text-sm font-bold text-emerald-950 ml-1">Global Destination Node</Label>
+                <Input id="destination" value={formData.destination} onChange={(e) => setFormData({...formData, destination: e.target.value})} placeholder="Enter delivery hub or retailer address" className="mt-2 px-4 py-3 h-auto rounded-xl border border-emerald-200/60 shadow-sm" />
+              </div>
             </div>
-            <div>
-              <Label htmlFor="shipmentId">Shipment ID</Label>
-              <Input
-                id="shipmentId"
-                value={formData.shipmentId}
-                onChange={(e) => setFormData({...formData, shipmentId: e.target.value})}
-                placeholder="Enter shipment ID"
-                className="gov-input mt-2"
-              />
-            </div>
-            <div>
-              <Label htmlFor="vehicleNumber">Vehicle Number</Label>
-              <Input
-                id="vehicleNumber"
-                value={formData.vehicleNumber}
-                onChange={(e) => setFormData({...formData, vehicleNumber: e.target.value})}
-                placeholder="Enter vehicle number"
-                className="gov-input mt-2"
-              />
-            </div>
-            <div>
-              <Label htmlFor="driverName">Driver Name</Label>
-              <Input
-                id="driverName"
-                value={formData.driverName}
-                onChange={(e) => setFormData({...formData, driverName: e.target.value})}
-                placeholder="Enter driver name"
-                className="gov-input mt-2"
-              />
-            </div>
-            <div>
-              <Label htmlFor="driverId">Driver ID</Label>
-              <Input
-                id="driverId"
-                value={formData.driverId}
-                onChange={(e) => setFormData({...formData, driverId: e.target.value})}
-                placeholder="Enter driver ID"
-                className="gov-input mt-2"
-              />
-            </div>
-            <div>
-              <Label htmlFor="destination">Destination</Label>
-              <Input
-                id="destination"
-                value={formData.destination}
-                onChange={(e) => setFormData({...formData, destination: e.target.value})}
-                placeholder="Enter destination"
-                className="gov-input mt-2"
-              />
+            <div className="mt-8">
+              <Button onClick={handleDispatchProduct} className="w-full py-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-600/20 text-lg">
+                Authorize Gateway & Dispatch
+              </Button>
             </div>
           </div>
-          <div className="flex space-x-4 mt-6">
-            <Button onClick={handleDispatchProduct} className="btn-government">
-              Log Distribution Event
-            </Button>
-            <Button onClick={() => setActiveForm(null)} variant="outline">
-              Cancel
-            </Button>
-          </div>
-        </Card>
-      )}
+        </DialogContent>
+      </Dialog>
 
-      {activeForm === 'monitor' && (
-        <Card className="gov-card animate-fade-in">
-          <div className="gov-card-header">
-            <h3 className="text-lg font-semibold">Transport Monitoring</h3>
-          </div>
-          <div className="space-y-4">
-            {shipments.filter(s => s.status === 'in_transit').map((shipment) => (
-              <div key={shipment.id} className="p-4 border rounded-lg bg-muted/30">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold">{shipment.shipmentId}</h4>
-                  <Badge className={getStatusColor(shipment.status)}>
-                    {shipment.status.replace('_', ' ')}
-                  </Badge>
+      <Dialog open={activeForm === 'monitor'} onOpenChange={(open) => !open && setActiveForm(null)}>
+        <DialogContent className="sm:max-w-4xl bg-white/95 backdrop-blur-2xl border border-emerald-200/60 rounded-[2rem] p-0 overflow-hidden shadow-2xl max-h-[85vh] flex flex-col">
+          <div className="bg-slate-950 px-8 py-6 sticky top-0 z-10 flex-shrink-0">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-black text-white flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-slate-800 shadow-inner flex items-center justify-center shrink-0 border border-slate-700">
+                  <Map className="text-sky-400 w-5 h-5" />
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Vehicle:</span>
-                    <div className="font-mono">{shipment.vehicleNumber}</div>
+                Live Orbital Fleet Tracker
+              </DialogTitle>
+            </DialogHeader>
+          </div>
+          <div className="p-8 overflow-y-auto bg-slate-50 flex-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {shipments.filter(s => s.status === 'in_transit').map((shipment) => (
+                <div key={shipment.id} className="p-6 border border-slate-200 rounded-3xl bg-white shadow-sm hover:shadow-xl hover:border-sky-200 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-sky-50 rounded-bl-full -z-10 group-hover:bg-sky-100 transition-colors"></div>
+                  <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Shipment Manifest</span>
+                      <h4 className="font-black text-slate-800 text-lg">{shipment.shipmentId}</h4>
+                    </div>
+                    <Badge className="bg-sky-100 text-sky-800 border-sky-200 px-3 py-1 shadow-inner animate-pulse">
+                      In Transit
+                    </Badge>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">Driver:</span>
-                    <div>{shipment.driverName}</div>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Destination:</span>
-                    <div>{shipment.destination}</div>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">GPS:</span>
-                    <div className="font-mono text-xs">{shipment.gpsLocation}</div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-slate-500 font-medium">Vehicle / Pilot</span>
+                      <span className="font-bold text-slate-900">{shipment.vehicleNumber} | {shipment.driverName}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm bg-slate-50 p-2 rounded-lg">
+                      <span className="text-slate-500 font-medium">Vector</span>
+                      <span className="font-bold text-sky-700 max-w-[150px] truncate">{shipment.destination}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs mt-4 pt-2 border-t border-slate-100">
+                      <span className="text-slate-400 flex items-center gap-1"><Map className="w-3 h-3" /> GPS Lock</span>
+                      <span className="font-mono text-slate-600 bg-slate-100 px-2 py-1 rounded">{shipment.gpsLocation}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-            {shipments.filter(s => s.status === 'in_transit').length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                No active shipments to monitor
-              </div>
-            )}
+              ))}
+              {shipments.filter(s => s.status === 'in_transit').length === 0 && (
+                <div className="col-span-full h-48 flex flex-col items-center justify-center text-slate-400 gap-4 bg-white rounded-3xl border border-slate-200 border-dashed">
+                  <Map className="w-12 h-12 text-slate-300 opacity-50" />
+                  <span className="font-semibold tracking-wide">ZERO ACTIVE VECTORS</span>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="flex space-x-4 mt-6">
-            <Button onClick={() => setActiveForm(null)} variant="outline">
-              Close
-            </Button>
-          </div>
-        </Card>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

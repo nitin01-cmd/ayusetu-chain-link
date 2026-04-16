@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  ShieldCheck, 
-  LogOut, 
-  Clock, 
-  User, 
+import {
+  ShieldCheck,
+  LogOut,
+  Clock,
+  User,
   LayoutDashboard,
   ShieldAlert,
   ChevronRight,
@@ -89,8 +89,8 @@ const Dashboard = ({ userRole, userId, onLogout }: DashboardProps) => {
                 {currentTime.toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' })}
               </div>
             </div>
-            
-            <Button 
+
+            <Button
               onClick={onLogout}
               className="bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 hover:border-red-500 px-6 font-bold shadow-sm transition-all duration-300 relative z-10"
             >
@@ -119,25 +119,24 @@ const Dashboard = ({ userRole, userId, onLogout }: DashboardProps) => {
 
       <main className="container mx-auto px-4 py-10 flex-grow relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          
+
           {/* 3. SIDE PROFILE CARD (GLASS) */}
           <div className="lg:col-span-1">
             <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 border border-emerald-200/60 shadow-xl shadow-emerald-900/5 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-400/10 blur-2xl rounded-full translate-x-10 -translate-y-10 transition-transform group-hover:scale-150 duration-700"></div>
-              
+
               <div className="relative z-10 flex flex-col items-center text-center">
-                <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 border-2 border-white flex items-center justify-center mb-4 shadow-lg overflow-hidden shrink-0">
-                  <img 
-                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffdfbf`} 
-                    alt="Profile Avatar" 
-                    className="w-full h-full object-cover" 
-                  />
+                <div className="w-24 h-24 rounded-2xl bg-emerald-950 flex items-center justify-center mb-4 shadow-xl border-4 border-white shrink-0 relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 to-transparent"></div>
+                  <span className="text-4xl font-black text-white relative z-10 uppercase">
+                    {userId ? userId.charAt(0) : 'U'}
+                  </span>
                 </div>
                 <h2 className="text-xl font-bold truncate w-full text-emerald-950">{userId}</h2>
                 <Badge className="mt-3 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-200 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors mb-2">
                   {userRole}
                 </Badge>
-                
+
                 {profileData && (
                   <div className="flex flex-col items-center gap-0.5 mt-2 animate-in fade-in zoom-in duration-500">
                     <p className="text-sm font-bold text-emerald-950 text-center leading-tight">{profileData.name}</p>
@@ -146,13 +145,29 @@ const Dashboard = ({ userRole, userId, onLogout }: DashboardProps) => {
                     </p>
                   </div>
                 )}
-                
-                <div className="w-full mt-8 pt-8 border-t border-emerald-100/60 space-y-4 text-emerald-900">
-                  <div className="flex justify-between items-center bg-white/50 px-4 py-2.5 rounded-xl border border-emerald-50">
-                    <span className="text-[10px] text-emerald-600/80 font-bold uppercase">Security Level</span>
-                    <span className="text-xs font-mono text-emerald-700 font-bold">L4_HIGH</span>
+
+                <div className="w-full mt-8 pt-8 border-t border-emerald-100/60 space-y-3 text-emerald-900">
+                  <div className="flex justify-between items-center bg-white/50 px-4 py-2 rounded-xl border border-emerald-50">
+                    <span className="text-[10px] text-emerald-600/80 font-bold uppercase">Terminal ID</span>
+                    <span className="text-xs font-mono text-emerald-700 font-bold">ST-{userId.split('-')[1] || '001'}</span>
                   </div>
-                  <div className="flex justify-between items-center bg-white/50 px-4 py-2.5 rounded-xl border border-emerald-50">
+                  <div className="flex justify-between items-center bg-white/50 px-4 py-2 rounded-xl border border-emerald-50">
+                    <span className="text-[10px] text-emerald-600/80 font-bold uppercase">Clearance</span>
+                    <span className="text-xs font-mono text-emerald-700 font-bold uppercase">Alpha</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-white/50 px-4 py-2 rounded-xl border border-emerald-50">
+                    <span className="text-[10px] text-emerald-600/80 font-bold uppercase">Joined</span>
+                    <span className="text-xs font-mono text-emerald-700 font-bold">Feb 2024</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-white/50 px-4 py-2 rounded-xl border border-emerald-50">
+                    <span className="text-[10px] text-emerald-600/80 font-bold uppercase">Integrity Sync</span>
+                    <span className="text-[10px] text-emerald-600 font-bold uppercase">Active</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-white/50 px-4 py-2 rounded-xl border border-emerald-50">
+                    <span className="text-[10px] text-emerald-600/80 font-bold uppercase">Encryption</span>
+                    <span className="text-xs font-mono text-emerald-700 font-bold uppercase">AES-256</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-white/50 px-4 py-2 rounded-xl border border-emerald-50">
                     <span className="text-[10px] text-emerald-600/80 font-bold uppercase">Node Status</span>
                     <span className="text-[10px] text-emerald-600 font-black flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> ONLINE
@@ -161,13 +176,13 @@ const Dashboard = ({ userRole, userId, onLogout }: DashboardProps) => {
                 </div>
               </div>
             </div>
-            
+
             <div className="mt-6 p-5 bg-white/80 backdrop-blur-xl border border-emerald-200/60 shadow-lg shadow-emerald-900/5 rounded-2xl flex items-start gap-4 transition-all hover:bg-white relative overflow-hidden group">
-               <ShieldAlert size={20} className="text-emerald-500 mt-0.5 shrink-0" />
-               <p className="text-[11px] text-emerald-800 font-medium leading-relaxed relative z-10">
-                 <strong>System Advisory:</strong> Ensure all batch records are cryptographically signed before 18:00 IST.
-               </p>
-               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-100/30 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+              <ShieldAlert size={20} className="text-emerald-500 mt-0.5 shrink-0" />
+              <p className="text-[11px] text-emerald-800 font-medium leading-relaxed relative z-10">
+                <strong>System Advisory:</strong> Ensure all batch records are cryptographically signed before 18:00 IST.
+              </p>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-100/30 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
             </div>
           </div>
 
@@ -181,7 +196,7 @@ const Dashboard = ({ userRole, userId, onLogout }: DashboardProps) => {
                 {userRole === 'manufacturer' && <ManufacturerView userId={userId} />}
                 {userRole === 'distributor' && <DistributorView userId={userId} />}
               </div>
-              
+
               {/* Subtle Branding Watermark */}
               <div className="absolute bottom-10 right-10 opacity-[0.03] select-none pointer-events-none text-emerald-900">
                 <ShieldCheck size={280} />

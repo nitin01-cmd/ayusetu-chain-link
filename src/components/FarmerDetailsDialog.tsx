@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { UserCircle, Database, ChevronRight, ShieldAlert } from 'lucide-react';
 
 interface FarmerDetailsDialogProps {
   children: React.ReactNode;
@@ -153,218 +154,178 @@ const FarmerDetailsDialog = ({ children }: FarmerDetailsDialogProps) => {
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-card">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold gov-heading">Farmer Details Lookup</DialogTitle>
-        </DialogHeader>
-
-        {/* Search Section */}
-        <Card className="gov-card">
-          <div className="gov-card-header">
-            <h3 className="text-lg font-semibold">Search Farmer Information</h3>
-          </div>
-          <div className="space-y-4">
-            {/* Search Type Selection */}
-            <div>
-              <Label className="text-base font-medium">Search By</Label>
-              <div className="flex space-x-6 mt-2">
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    name="searchType"
-                    value="farmer"
-                    checked={searchType === 'farmer'}
-                    onChange={(e) => setSearchType(e.target.value as 'farmer')}
-                    className="text-primary"
-                  />
-                  <span>Farmer ID</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    name="searchType"
-                    value="batch"
-                    checked={searchType === 'batch'}
-                    onChange={(e) => setSearchType(e.target.value as 'batch')}
-                    className="text-primary"
-                  />
-                  <span>Batch ID</span>
-                </label>
+      <DialogContent className="sm:max-w-4xl bg-white/95 backdrop-blur-2xl border border-emerald-200/60 rounded-[2.5rem] p-0 overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
+        {/* Header Section */}
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 px-8 py-6 border-b border-emerald-100/50 sticky top-0 z-20">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-emerald-950 flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center shrink-0 border border-emerald-50">
+                <UserCircle className="text-emerald-600 w-6 h-6" />
               </div>
-            </div>
+              Farmer Intelligence Node
+            </DialogTitle>
+          </DialogHeader>
+        </div>
 
-            {/* Search Input */}
-            <div className="flex space-x-4">
-              <div className="flex-1">
-                <Label htmlFor="searchValue">
-                  {searchType === 'farmer' ? 'Enter Farmer ID (e.g., F001, F002, F003)' : 'Enter Batch ID (e.g., BATCH001, CE001, FP_BATCH_001)'}
+        <div className="flex-1 overflow-y-auto p-8 bg-slate-50/30 overscroll-contain">
+          {/* Search Card */}
+          <div className="bg-white/90 backdrop-blur-sm border border-emerald-100 rounded-[2rem] p-8 shadow-sm mb-8">
+            <h3 className="text-xs font-black text-emerald-600 uppercase tracking-[0.2em] mb-6">Database Lookup</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end">
+              <div className="md:col-span-3">
+                <Label className="text-sm font-bold text-emerald-950 ml-1">Search Vector</Label>
+                <div className="flex gap-4 mt-3">
+                  <button 
+                    onClick={() => setSearchType('farmer')}
+                    className={`flex-1 py-3 px-4 rounded-xl border text-xs font-bold transition-all ${searchType === 'farmer' ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg' : 'bg-white border-emerald-100 text-emerald-900 hover:border-emerald-300'}`}
+                  >
+                    FARMER ID
+                  </button>
+                  <button 
+                    onClick={() => setSearchType('batch')}
+                    className={`flex-1 py-3 px-4 rounded-xl border text-xs font-bold transition-all ${searchType === 'batch' ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg' : 'bg-white border-emerald-100 text-emerald-900 hover:border-emerald-300'}`}
+                  >
+                    BATCH ID
+                  </button>
+                </div>
+              </div>
+
+              <div className="md:col-span-6">
+                <Label htmlFor="searchValue" className="text-sm font-bold text-emerald-950 ml-1">
+                  {searchType === 'farmer' ? 'Enter Unique Farmer ID' : 'Linked Batch Identifier'}
                 </Label>
                 <Input
                   id="searchValue"
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
-                  placeholder={searchType === 'farmer' ? 'F001' : 'BATCH001'}
-                  className="gov-input mt-2"
+                  placeholder={searchType === 'farmer' ? 'e.g. F001' : 'e.g. BATCH001'}
+                  className="mt-2 text-lg font-mono tracking-wider h-14 bg-white"
                 />
               </div>
-              <div className="flex items-end">
-                <Button onClick={handleSearch} className="btn-government">
-                  Search Farmer
+
+              <div className="md:col-span-3">
+                <Button onClick={handleSearch} className="w-full h-14 rounded-2xl bg-slate-900 hover:bg-black text-white font-black text-sm tracking-widest shadow-xl transition-all">
+                  EXECUTE LOOKUP
                 </Button>
               </div>
             </div>
+          </div>
 
-            {/* Sample IDs Helper */}
-            <div className="text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">
-              <div className="font-medium mb-2">Sample Data Available:</div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div>
-                  <strong>Farmer IDs:</strong> F001, F002, F003
+          {/* Farmer Details Display */}
+          {searchAttempted && selectedFarmer ? (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left Panel: Profile */}
+                <div className="lg:col-span-1 space-y-6">
+                  <div className="bg-white border border-emerald-100 rounded-[2rem] p-6 text-center overflow-hidden relative group">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-bl-full -z-10"></div>
+                    <div className="w-24 h-24 rounded-3xl bg-emerald-950 mx-auto mb-4 border-4 border-white shadow-lg flex items-center justify-center relative overflow-hidden">
+                       <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/30 to-transparent"></div>
+                       <span className="text-4xl font-black text-white relative z-10">{selectedFarmer.name.charAt(0)}</span>
+                    </div>
+                    <h4 className="text-xl font-black text-emerald-950 leading-tight">{selectedFarmer.name}</h4>
+                    <p className="text-xs font-bold text-emerald-600/70 border border-emerald-100 bg-emerald-50/50 inline-block px-3 py-1 rounded-full mt-2">
+                       PIN: {selectedFarmer.id}
+                    </p>
+                    
+                    <div className="mt-6 pt-6 border-t border-slate-50 space-y-3">
+                      <div className="flex justify-between items-center px-2">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">Trust Score</span>
+                        <Badge className={`${getComplianceColor(selectedFarmer.complianceScore)} font-black`}>
+                          {selectedFarmer.complianceScore}%
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center px-2">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">Status</span>
+                        <span className="text-[10px] font-black text-emerald-600">CERTIFIED</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white border border-emerald-100 rounded-[2rem] p-6">
+                    <h5 className="text-[10px] font-black text-emerald-900 uppercase tracking-widest mb-4">Operations</h5>
+                    <div className="space-y-4">
+                       <div className="p-3 bg-slate-50 rounded-2xl flex justify-between items-center">
+                          <span className="text-xs font-bold text-slate-500">Farm Size</span>
+                          <span className="text-xs font-black text-slate-900">{selectedFarmer.farmSize}</span>
+                       </div>
+                       <div className="p-3 bg-slate-50 rounded-2xl">
+                          <span className="text-xs font-bold text-slate-500 block mb-1">Crops Traceable</span>
+                          <div className="flex flex-wrap gap-1">
+                             {selectedFarmer.cropTypes.map(c => <Badge key={c} className="bg-white text-emerald-700 border-emerald-100 text-[9px]">{c}</Badge>)}
+                          </div>
+                       </div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <strong>Batch IDs:</strong> BATCH001, CE001, FP_BATCH_001, REC001
+
+                {/* Right Panel: Data Tables */}
+                <div className="lg:col-span-2 space-y-6">
+                  <div className="bg-white border border-emerald-100 rounded-[2rem] overflow-hidden shadow-sm">
+                    <div className="px-6 py-4 bg-slate-900 text-white flex justify-between items-center">
+                       <span className="text-[10px] font-black tracking-[0.2em] uppercase">Registry Insights</span>
+                       <Badge className="bg-white/20 text-white border-0 text-[10px]">LATEST UPDATE: {selectedFarmer.lastDelivery}</Badge>
+                    </div>
+                    <div className="p-6 grid grid-cols-2 gap-x-8 gap-y-6">
+                       <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">Geographical Vector</p>
+                          <p className="text-sm font-bold text-slate-900 mt-1">{selectedFarmer.farmLocation}</p>
+                          <p className="text-[10px] font-mono text-emerald-600 mt-1">{selectedFarmer.farmCoordinates}</p>
+                       </div>
+                       <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">Certified Status</p>
+                          <div className="flex items-center gap-2 mt-1">
+                             <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                             <p className="text-sm font-bold text-slate-900">{selectedFarmer.certificationStatus}</p>
+                          </div>
+                       </div>
+                       <div className="border-t border-slate-50 pt-4">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">Contact Interface</p>
+                          <p className="text-sm font-bold text-slate-900 mt-1">{selectedFarmer.contactNumber}</p>
+                          <p className="text-[10px] text-slate-400 mt-1">{selectedFarmer.email}</p>
+                       </div>
+                       <div className="border-t border-slate-50 pt-4">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">Bank settlement</p>
+                          <p className="text-sm font-mono font-bold text-slate-900 mt-1">{selectedFarmer.bankAccount}</p>
+                          <p className="text-[10px] font-mono text-emerald-600 mt-1">IFSC: {selectedFarmer.ifscCode}</p>
+                       </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-emerald-600 rounded-[2rem] p-6 text-white flex items-center justify-between shadow-xl shadow-emerald-600/20">
+                     <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
+                           <Database className="w-6 h-6" />
+                        </div>
+                        <div>
+                           <p className="text-[10px] font-black uppercase opacity-60">Ledger Sync</p>
+                           <p className="text-lg font-black">{selectedFarmer.totalBatches} Deliveries Logged</p>
+                        </div>
+                     </div>
+                     <ChevronRight className="w-6 h-6 opacity-40" />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </Card>
+          ) : searchAttempted ? (
+            <div className="h-64 flex flex-col items-center justify-center text-slate-400 bg-white border border-slate-100 rounded-[2rem]">
+               <ShieldAlert className="w-12 h-12 opacity-20 mb-4" />
+               <p className="font-bold tracking-tight">IDENTITY NOT DISCOVERED</p>
+               <p className="text-xs mt-1">Check registry identifier and retry vector.</p>
+            </div>
+          ) : (
+            <div className="h-64 flex flex-col items-center justify-center text-slate-400 bg-emerald-50/50 border border-emerald-100 border-dashed rounded-[2.5rem]">
+               <UserCircle className="w-12 h-12 opacity-10 mb-4" />
+               <p className="text-sm font-bold opacity-30 tracking-[0.2em]">AWAITING INPUT PARAMETERS</p>
+            </div>
+          )}
+        </div>
 
-        {/* Farmer Details Display */}
-        {searchAttempted && (
-          <Card className="gov-card animate-fade-in">
-            {selectedFarmer ? (
-              <>
-                <div className="gov-card-header">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">Farmer Profile: {selectedFarmer.name}</h3>
-                    <Badge className={getCertificationColor(selectedFarmer.certificationStatus)}>
-                      {selectedFarmer.certificationStatus}
-                    </Badge>
-                  </div>
-                </div>
-                
-                <div className="space-y-6">
-                  {/* Basic Information */}
-                  <div>
-                    <h4 className="font-semibold text-base mb-3 text-primary">Basic Information</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-3">
-                        <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Farmer ID</Label>
-                          <div className="font-mono text-sm mt-1">{selectedFarmer.id}</div>
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Full Name</Label>
-                          <div className="text-sm mt-1">{selectedFarmer.name}</div>
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Contact Number</Label>
-                          <div className="text-sm mt-1">{selectedFarmer.contactNumber}</div>
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Email</Label>
-                          <div className="text-sm mt-1">{selectedFarmer.email}</div>
-                        </div>
-                      </div>
-                      <div className="space-y-3">
-                        <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Farm Location</Label>
-                          <div className="text-sm mt-1">{selectedFarmer.farmLocation}</div>
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Farm Size</Label>
-                          <div className="text-sm mt-1">{selectedFarmer.farmSize}</div>
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium text-muted-foreground">GPS Coordinates</Label>
-                          <div className="text-sm mt-1 font-mono">{selectedFarmer.farmCoordinates}</div>
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Member Since</Label>
-                          <div className="text-sm mt-1">{selectedFarmer.joinDate}</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Crop Information */}
-                  <div>
-                    <h4 className="font-semibold text-base mb-3 text-primary">Crop Information</h4>
-                    <div>
-                      <Label className="text-sm font-medium text-muted-foreground">Cultivated Medicinal Plants</Label>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {selectedFarmer.cropTypes.map((crop, index) => (
-                          <Badge key={index} className="badge-pending">
-                            {crop}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Performance Metrics */}
-                  <div>
-                    <h4 className="font-semibold text-base mb-3 text-primary">Performance & Compliance</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="text-center p-4 bg-muted/30 rounded-lg">
-                        <div className="text-2xl font-bold text-primary">{selectedFarmer.totalBatches}</div>
-                        <div className="text-sm text-muted-foreground">Total Batches</div>
-                      </div>
-                      <div className="text-center p-4 bg-muted/30 rounded-lg">
-                        <div className="text-2xl font-bold text-primary">{selectedFarmer.complianceScore}%</div>
-                        <div className="text-sm text-muted-foreground">Compliance Score</div>
-                        <Badge className={getComplianceColor(selectedFarmer.complianceScore)}>
-                          {selectedFarmer.complianceScore >= 90 ? 'Excellent' : 
-                           selectedFarmer.complianceScore >= 75 ? 'Good' : 'Needs Improvement'}
-                        </Badge>
-                      </div>
-                      <div className="text-center p-4 bg-muted/30 rounded-lg">
-                        <div className="text-sm font-medium text-primary">Last Delivery</div>
-                        <div className="text-sm text-muted-foreground mt-1">{selectedFarmer.lastDelivery}</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Financial Information */}
-                  <div>
-                    <h4 className="font-semibold text-base mb-3 text-primary">Financial Details</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">Bank Account</Label>
-                        <div className="text-sm mt-1 font-mono">{selectedFarmer.bankAccount}</div>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-muted-foreground">IFSC Code</Label>
-                        <div className="text-sm mt-1 font-mono">{selectedFarmer.ifscCode}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-8">
-                <div className="text-muted-foreground mb-4">
-                  <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 9l3 3L9 9zm0 0l3 3 3-3M9 9l3 3m0 0l3-3" style={{transform: "translate(2px, 2px)"}} />
-                  </svg>
-                  <p className="text-lg font-medium">No farmer found</p>
-                  <p className="text-sm">
-                    {searchType === 'farmer' 
-                      ? `No farmer registered with ID "${searchValue}"`
-                      : `No farmer linked to batch "${searchValue}"`
-                    }
-                  </p>
-                </div>
-              </div>
-            )}
-          </Card>
-        )}
-
-        <div className="flex justify-end space-x-4 mt-6">
-          <Button onClick={() => setOpen(false)} variant="outline">
-            Close
+        {/* Footer Actions */}
+        <div className="bg-white px-8 py-6 border-t border-slate-100 flex justify-end gap-3 shrink-0">
+          <Button onClick={() => setOpen(false)} variant="outline" className="px-8 border-slate-200 rounded-xl font-bold text-slate-600">
+            DISMISS
           </Button>
         </div>
       </DialogContent>

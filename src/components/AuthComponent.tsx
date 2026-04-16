@@ -297,28 +297,28 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
       });
       const data = await response.json();
       console.log('API Response:', data);
-      
+
       let item = null;
       if (data.status === 200 && data.result && Array.isArray(data.result)) {
-          item = data.result[0];
+        item = data.result[0];
       } else if (Array.isArray(data)) {
-          item = data[0];
+        item = data[0];
       } else if (data.results && Array.isArray(data.results)) {
-          item = data.results[0];
+        item = data.results[0];
       } else {
-          item = data;
+        item = data;
       }
-      
+
       if (item && (item.placename || item.placeName || item.Name || item.name || item.office || item.officeName)) {
-         const placename = item.placename || item.placeName || item.Name || item.name || item.office || item.officeName;
-         const district = item.district || item.District || item.taluk || item.Taluk || '';
-         const state = item.state || item.State || item.circle || item.Circle || '';
-         const autoLoc = `${placename}${district ? ', ' + district : ''}${state ? ', ' + state : ''}`;
-         handleCredentialChange('location', autoLoc);
-         toast({ title: "Location Found", description: autoLoc });
+        const placename = item.placename || item.placeName || item.Name || item.name || item.office || item.officeName;
+        const district = item.district || item.District || item.taluk || item.Taluk || '';
+        const state = item.state || item.State || item.circle || item.Circle || '';
+        const autoLoc = `${placename}${district ? ', ' + district : ''}${state ? ', ' + state : ''}`;
+        handleCredentialChange('location', autoLoc);
+        toast({ title: "Location Found", description: autoLoc });
       } else {
-         const errorMsg = data.message || data.Message || "Could not map this pincode.";
-         toast({ title: "Pincode Failed", description: errorMsg, variant: "destructive" });
+        const errorMsg = data.message || data.Message || "Could not map this pincode.";
+        toast({ title: "Pincode Failed", description: errorMsg, variant: "destructive" });
       }
     } catch (err) {
       console.error("Pincode API error", err);
@@ -348,12 +348,12 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
         return false;
       }
     }
-    
+
     if (selectedRole !== 'farmer') {
       const inputId = credentials.aggregatorId || credentials.organizationId || credentials.companyId || credentials.distributorId;
       const expectedUsers = mockDatabase[selectedRole] || [];
       const matchedUser = expectedUsers.find(u => u.id === inputId);
-      
+
       if (!matchedUser) {
         toast({ title: "Account Not Found", description: `The ID '${inputId || ''}' does not exist in our database.`, variant: "destructive" });
         return false;
@@ -372,7 +372,7 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
       setIsLoading(true);
       const roleConfig = getRoleConfig(selectedRole);
       const needsOtp = roleConfig?.fields.includes('otp');
-      
+
       setTimeout(() => {
         setIsLoading(false);
         if (needsOtp) {
@@ -404,7 +404,7 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
     const newDigits = [...otpDigits];
     newDigits[index] = value;
     setOtpDigits(newDigits);
-    
+
     if (value && index < 5) {
       otpInputRefs.current[index + 1]?.focus();
     }
@@ -420,7 +420,7 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
     <>
       {isAuthLoading && <AyuLoader />}
       <div className="h-dvh flex flex-col lg:flex-row bg-gradient-to-br from-amber-50 via-green-50 to-green-100 overflow-hidden">
-        
+
         {/* Left Panel (40%) */}
         <div className="hidden lg:flex lg:w-[40%] relative flex-col justify-between p-8 overflow-hidden">
           {/* Background Image */}
@@ -428,7 +428,7 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
             <img src={ayuestufrontpage} alt="AyuSetu Background" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-black/70" />
           </div>
-          
+
           {/* Top Logo Section - Moved Up & Smaller */}
           <div className="relative z-10 flex items-center gap-3 top-2">
             <div className="w-12 h-12 rounded-full bg-[#3c4a3e]/70 backdrop-blur-md border border-white/10 flex items-center justify-center p-2">
@@ -461,7 +461,7 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
 
         {/* Right Panel (60%) */}
         <div className="w-full lg:w-[60%] flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-24 overflow-y-auto">
-          
+
           {!hasStarted ? (
             <div className="w-full max-w-2xl mx-auto flex flex-col justify-center min-h-[60vh] animate-in fade-in slide-in-from-bottom-8 duration-700">
               <div className="space-y-6">
@@ -473,7 +473,7 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
                   Your trusted herbal supply chain ecosystem.
                 </p>
               </div>
-              
+
               <div className="pt-16">
                 {/* Uiverse-style Get Started Button */}
                 <button
@@ -491,55 +491,55 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
           ) : (
             <div className="w-full max-w-md mx-auto space-y-8">
               {step === 'role-selection' && (
-                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="text-center lg:text-left mb-8">
-                      <h2 className="text-3xl font-bold text-emerald-950 tracking-tight">Select your role</h2>
-                      <p className="text-emerald-700/80 mt-2 font-medium">Choose how you participate in the network</p>
-                    </div>
-                    
-                    <div className="grid gap-4">
-                      {roles.map((role) => (
-                        <button
-                          key={role.id}
-                          onClick={() => handleRoleSelect(role.id)}
-                          className={`flex items-center p-4 rounded-2xl border-2 border-transparent hover:border-emerald-500/30 transition-all duration-300 ${role.color} hover:shadow-lg group text-left w-full`}
-                        >
-                          <div className="w-12 h-12 flex items-center justify-center bg-white/50 rounded-xl text-2xl shadow-sm group-hover:scale-110 transition-transform">
-                            {role.icon}
-                          </div>
-                          <div className="ml-4 flex-1">
-                            <h3 className="text-emerald-950 font-semibold">{role.label}</h3>
-                            <p className="text-emerald-800/70 text-sm">{role.description}</p>
-                          </div>
-                          <ChevronRight className="text-emerald-400 group-hover:text-emerald-600 transition-colors" />
-                        </button>
-                      ))}
-                    </div>
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div className="text-center lg:text-left mb-8">
+                    <h2 className="text-3xl font-bold text-emerald-950 tracking-tight">Select your role</h2>
+                    <p className="text-emerald-700/80 mt-2 font-medium">Choose how you participate in the network</p>
                   </div>
-                )}
 
-                {step === 'credentials-entry' && selectedRole && (
-                  <div className="animate-in slide-in-from-right-8 duration-500">
-                    <button
-                      onClick={() => setStep('role-selection')}
-                      className="text-emerald-600 hover:text-emerald-700 text-sm font-medium mb-6 flex items-center transition-colors"
-                    >
-                      ← Back to roles
-                    </button>
+                  <div className="grid gap-4">
+                    {roles.map((role) => (
+                      <button
+                        key={role.id}
+                        onClick={() => handleRoleSelect(role.id)}
+                        className={`flex items-center p-4 rounded-2xl border-2 border-transparent hover:border-emerald-500/30 transition-all duration-300 ${role.color} hover:shadow-lg group text-left w-full`}
+                      >
+                        <div className="w-12 h-12 flex items-center justify-center bg-white/50 rounded-xl text-2xl shadow-sm group-hover:scale-110 transition-transform">
+                          {role.icon}
+                        </div>
+                        <div className="ml-4 flex-1">
+                          <h3 className="text-emerald-950 font-semibold">{role.label}</h3>
+                          <p className="text-emerald-800/70 text-sm">{role.description}</p>
+                        </div>
+                        <ChevronRight className="text-emerald-400 group-hover:text-emerald-600 transition-colors" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-                    <div className="mb-8">
-                      <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-3xl mb-4 border border-emerald-100">
-                        {getRoleConfig(selectedRole)?.icon}
-                      </div>
-                      <h2 className="text-2xl font-bold text-emerald-950">
-                        {getRoleConfig(selectedRole)?.loginLabel}
-                      </h2>
+              {step === 'credentials-entry' && selectedRole && (
+                <div className="animate-in slide-in-from-right-8 duration-500">
+                  <button
+                    onClick={() => setStep('role-selection')}
+                    className="text-emerald-600 hover:text-emerald-700 text-sm font-medium mb-6 flex items-center transition-colors"
+                  >
+                    ← Back to roles
+                  </button>
+
+                  <div className="mb-8">
+                    <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-3xl mb-4 border border-emerald-100">
+                      {getRoleConfig(selectedRole)?.icon}
                     </div>
+                    <h2 className="text-2xl font-bold text-emerald-950">
+                      {getRoleConfig(selectedRole)?.loginLabel}
+                    </h2>
+                  </div>
 
-                    <div className="space-y-6">
-                      <div className={selectedRole === 'farmer' ? "grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-5" : "space-y-5"}>
-                        {getRoleConfig(selectedRole)?.fields.map(field => field !== 'otp' && (
-                          <div key={field} className={selectedRole === 'farmer' && ['fullName', 'location'].includes(field) ? 'sm:col-span-2' : ''}>
+                  <div className="space-y-6">
+                    <div className={selectedRole === 'farmer' ? "grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-5" : "space-y-5"}>
+                      {getRoleConfig(selectedRole)?.fields.map(field => field !== 'otp' && (
+                        <div key={field} className={selectedRole === 'farmer' && ['fullName', 'location'].includes(field) ? 'sm:col-span-2' : ''}>
                           <label className="block text-sm font-medium text-emerald-900 mb-1.5 ml-1">
                             {getFieldLabel(field)}
                           </label>
@@ -586,7 +586,7 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
                                   if (val.length <= 6) handlePincodeUpdate(val);
                                 }}
                               />
-                              <button 
+                              <button
                                 onClick={() => checkPincodeAPI(credentials.pincode as string)}
                                 disabled={(credentials.pincode || '').length !== 6}
                                 className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-100 hover:bg-emerald-200 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -639,81 +639,81 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
                               )}
                             </div>
                           )}
-                          </div>
-                        ))}
-                      </div>
-
-                      <Button 
-                        className="w-full py-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-base shadow-lg shadow-emerald-600/20 mt-4 group"
-                        onClick={handleContinue}
-                        disabled={isLoading}
-                      >
-                        {isLoading ? (
-                          <>
-                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                            <span>Processing...</span>
-                          </>
-                        ) : (
-                          <>
-                            <span>{selectedRole === 'farmer' ? 'Register & Continue' : 'Secure Login'}</span>
-                            <Lock className="w-4 h-4 ml-2 opacity-70 group-hover:opacity-100 transition-opacity" />
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {step === 'otp-verification' && (
-                  <div className="animate-in slide-in-from-right-8 duration-500">
-                    <button
-                      onClick={() => setStep('credentials-entry')}
-                      className="text-emerald-600 hover:text-emerald-700 text-sm font-medium mb-6 flex items-center"
-                    >
-                      ← Back
-                    </button>
-
-                    <div className="mb-8">
-                      <h2 className="text-2xl font-bold text-emerald-950 mb-2">Two-Factor Auth</h2>
-                      <p className="text-emerald-700/80">
-                        Enter the 6-digit code sent to your registered device.
-                      </p>
-                    </div>
-
-                    <div className="flex justify-between gap-2 mb-8">
-                      {otpDigits.map((digit, idx) => (
-                        <input
-                          key={idx}
-                          ref={el => otpInputRefs.current[idx] = el}
-                          type="text"
-                          inputMode="numeric"
-                          maxLength={1}
-                          className="w-12 h-14 text-center text-xl font-semibold bg-white border border-emerald-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm"
-                          value={digit}
-                          onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
-                          onKeyDown={(e) => handleOtpKeyDown(e, idx)}
-                        />
+                        </div>
                       ))}
                     </div>
 
-                    <Button 
-                      className="w-full py-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-base shadow-lg shadow-emerald-600/20"
-                      onClick={handleVerifyOtp}
-                      disabled={isFinalizing}
+                    <Button
+                      className="w-full py-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-base shadow-lg shadow-emerald-600/20 mt-4 group"
+                      onClick={handleContinue}
+                      disabled={isLoading}
                     >
-                      {isFinalizing ? (
+                      {isLoading ? (
                         <>
                           <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                          <span>Verifying...</span>
+                          <span>Processing...</span>
                         </>
                       ) : (
-                        "Verify & Access"
+                        <>
+                          <span>{selectedRole === 'farmer' ? 'Register & Continue' : 'Secure Login'}</span>
+                          <Lock className="w-4 h-4 ml-2 opacity-70 group-hover:opacity-100 transition-opacity" />
+                        </>
                       )}
                     </Button>
                   </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
+
+              {step === 'otp-verification' && (
+                <div className="animate-in slide-in-from-right-8 duration-500">
+                  <button
+                    onClick={() => setStep('credentials-entry')}
+                    className="text-emerald-600 hover:text-emerald-700 text-sm font-medium mb-6 flex items-center"
+                  >
+                    ← Back
+                  </button>
+
+                  <div className="mb-8">
+                    <h2 className="text-2xl font-bold text-emerald-950 mb-2">Two-Factor Auth</h2>
+                    <p className="text-emerald-700/80">
+                      Enter the 6-digit code sent to your registered device.
+                    </p>
+                  </div>
+
+                  <div className="flex justify-between gap-2 mb-8">
+                    {otpDigits.map((digit, idx) => (
+                      <input
+                        key={idx}
+                        ref={el => otpInputRefs.current[idx] = el}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        className="w-12 h-14 text-center text-xl font-semibold bg-white border border-emerald-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm"
+                        value={digit}
+                        onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
+                        onKeyDown={(e) => handleOtpKeyDown(e, idx)}
+                      />
+                    ))}
+                  </div>
+
+                  <Button
+                    className="w-full py-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-base shadow-lg shadow-emerald-600/20"
+                    onClick={handleVerifyOtp}
+                    disabled={isFinalizing}
+                  >
+                    {isFinalizing ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        <span>Verifying...</span>
+                      </>
+                    ) : (
+                      "Verify & Access"
+                    )}
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </>
