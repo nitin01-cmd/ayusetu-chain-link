@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import ayusetuEmblem from '@/assets/ayusetu-emblem.png';
 import ayuestufrontpage from '@/assets/ayuestufrontpage.png';
-import { ChevronRight, Lock } from 'lucide-react';
+import { ChevronRight, Lock, Check, Heart, Loader2, ChevronDown } from 'lucide-react';
 
 interface AuthComponentProps {
   onLogin: (role: string, userId: string) => void;
@@ -35,6 +35,11 @@ interface RoleCard {
 }
 
 interface CredentialsState {
+  fullName?: string;
+  location?: string;
+  pincode?: string;
+  aadharId?: string;
+  farmerType?: string;
   mobile: string;
   aggregatorId: string;
   organizationId: string;
@@ -92,12 +97,18 @@ const AyuLoader = () => {
 };
 
 const AuthComponent = ({ onLogin }: AuthComponentProps) => {
+  console.log("AuthComponent mounted");
   const roleSelectionRef = useRef<HTMLDivElement | null>(null);
   const otpInputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const [hasStarted, setHasStarted] = useState(false);
   const [step, setStep] = useState<AuthStep>('role-selection');
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [credentials, setCredentials] = useState<CredentialsState>({
+    fullName: '',
+    location: '',
+    pincode: '',
+    aadharId: '',
+    farmerType: 'farmer',
     mobile: '',
     aggregatorId: '',
     organizationId: '',
@@ -115,15 +126,21 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
   // Firebase Auth check on mount
   useEffect(() => {
     setIsAuthLoading(true);
-    const auth = getAuth(firebaseApp);
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // User is signed in, restore session
-        onLogin('firebase', user.uid);
-      }
+    try {
+      const auth = getAuth(firebaseApp);
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        console.log("onAuthStateChanged called", user);
+        if (user) {
+          // User is signed in, restore session
+          onLogin('firebase', user.uid);
+        }
+        setIsAuthLoading(false);
+      });
+      return () => unsubscribe();
+    } catch (err) {
+      console.error("Error in Firebase Auth useEffect", err);
       setIsAuthLoading(false);
-    });
-    return () => unsubscribe();
+    }
   }, []);
 
   // Autofocus first OTP input when entering OTP step
@@ -154,10 +171,10 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
       id: 'farmer',
       label: 'Farmer / Collector',
       icon: '🌿',
-      description: 'Herbal resource providers',
-      loginLabel: 'Login as Farmer',
+      description: 'Register as Herbal resource provider',
+      loginLabel: 'Farmer Registration',
       color: 'bg-emerald-50/70',
-      fields: ['mobile', 'otp']
+      fields: ['fullName', 'mobile', 'aadharId', 'pincode', 'location', 'farmerType', 'otp']
     },
     {
       id: 'aggregator',
@@ -166,7 +183,7 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
       description: 'Collection & consolidation',
       loginLabel: 'Login as Aggregator',
       color: 'bg-amber-50/70',
-      fields: ['aggregatorId', 'password']
+      fields: ['aggregatorId', 'password', 'otp']
     },
     {
       id: 'processor',
@@ -175,7 +192,7 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
       description: 'Processing & refinement',
       loginLabel: 'Login as Processor',
       color: 'bg-sky-50/70',
-      fields: ['organizationId', 'password']
+      fields: ['organizationId', 'password', 'otp']
     },
     {
       id: 'manufacturer',
@@ -193,16 +210,39 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
       description: 'Logistics & delivery',
       loginLabel: 'Login as Distributor',
       color: 'bg-violet-50/70',
-      fields: ['distributorId', 'password']
+      fields: ['distributorId', 'password', 'otp']
     }
   ];
 
-  const demoCredentials = {
-    'farmer': { otp: '111111', userId: 'FARM001', credential: 'any' },
-    'aggregator': { username: 'AGG001', password: 'password', userId: 'AGG001' },
-    'processor': { username: 'PROC001', password: 'password', userId: 'PROC001' },
-    'manufacturer': { username: 'MFG001', password: 'password', otp: '111111', userId: 'MFG001' },
-    'distributor': { username: 'DIST001', password: 'password', userId: 'DIST001' }
+  const mockDatabase: Record<string, { id: string; password?: string }[]> = {
+    'aggregator': [
+      { id: 'AGG-1001', password: 'password123' },
+      { id: 'AGG-1002', password: 'password123' },
+      { id: 'AGG-1003', password: 'password123' },
+      { id: 'AGG-1004', password: 'password123' },
+      { id: 'AGG-1005', password: 'password123' }
+    ],
+    'processor': [
+      { id: 'PROC-2001', password: 'password123' },
+      { id: 'PROC-2002', password: 'password123' },
+      { id: 'PROC-2003', password: 'password123' },
+      { id: 'PROC-2004', password: 'password123' },
+      { id: 'PROC-2005', password: 'password123' }
+    ],
+    'manufacturer': [
+      { id: 'MFG-3001', password: 'password123' },
+      { id: 'MFG-3002', password: 'password123' },
+      { id: 'MFG-3003', password: 'password123' },
+      { id: 'MFG-3004', password: 'password123' },
+      { id: 'MFG-3005', password: 'password123' }
+    ],
+    'distributor': [
+      { id: 'DIST-4001', password: 'password123' },
+      { id: 'DIST-4002', password: 'password123' },
+      { id: 'DIST-4003', password: 'password123' },
+      { id: 'DIST-4004', password: 'password123' },
+      { id: 'DIST-4005', password: 'password123' }
+    ]
   };
 
   const handleRoleSelect = (roleId: string) => {
@@ -214,6 +254,11 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
 
   const getFieldLabel = (field: string): string => {
     const labels: { [key: string]: string } = {
+      'fullName': 'Full Name',
+      'pincode': 'Pincode',
+      'location': 'Location / Village',
+      'aadharId': 'Aadhar ID',
+      'farmerType': 'Type (Farmer or Collector)',
       'mobile': 'Mobile Number',
       'aggregatorId': 'Aggregator ID',
       'organizationId': 'Organization ID',
@@ -232,15 +277,60 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
     }));
   };
 
+  const handlePincodeUpdate = (val: string) => {
+    handleCredentialChange('pincode', val);
+    if (val.length === 6) {
+      checkPincodeAPI(val);
+    }
+  };
+
+  const checkPincodeAPI = async (val: string) => {
+    if (val.length !== 6) return;
+    try {
+      const response = await fetch(`https://india-pincode-api.p.rapidapi.com/v1/in/places/pincode?pincode=${val}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-rapidapi-host': 'india-pincode-api.p.rapidapi.com',
+          'x-rapidapi-key': '7ee0fb3b65msha7f685e114d12b2p10014ejsn697474e1f7cd'
+        }
+      });
+      const data = await response.json();
+      console.log('API Response:', data);
+      
+      let item = null;
+      if (data.status === 200 && data.result && Array.isArray(data.result)) {
+          item = data.result[0];
+      } else if (Array.isArray(data)) {
+          item = data[0];
+      } else if (data.results && Array.isArray(data.results)) {
+          item = data.results[0];
+      } else {
+          item = data;
+      }
+      
+      if (item && (item.placename || item.placeName || item.Name || item.name || item.office || item.officeName)) {
+         const placename = item.placename || item.placeName || item.Name || item.name || item.office || item.officeName;
+         const district = item.district || item.District || item.taluk || item.Taluk || '';
+         const state = item.state || item.State || item.circle || item.Circle || '';
+         const autoLoc = `${placename}${district ? ', ' + district : ''}${state ? ', ' + state : ''}`;
+         handleCredentialChange('location', autoLoc);
+         toast({ title: "Location Found", description: autoLoc });
+      } else {
+         const errorMsg = data.message || data.Message || "Could not map this pincode.";
+         toast({ title: "Pincode Failed", description: errorMsg, variant: "destructive" });
+      }
+    } catch (err) {
+      console.error("Pincode API error", err);
+      toast({ title: "API Error", description: (err as Error).message, variant: "destructive" });
+    }
+  };
+
   const validateCredentials = (): boolean => {
     const roleConfig = getRoleConfig(selectedRole);
     if (!roleConfig) return false;
 
     for (const field of roleConfig.fields) {
-      if (field === 'otp') {
-        setCredentials(prev => ({ ...prev, requiresOtp: true }));
-        return true; // Will proceed to OTP verification
-      }
       if (field === 'mobile' && (!credentials.mobile || credentials.mobile.length < 10)) {
         toast({
           title: "Invalid Mobile Number",
@@ -249,590 +339,371 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
         });
         return false;
       }
-      if (['aggregatorId', 'organizationId', 'companyId', 'distributorId'].includes(field)) {
-        const value = credentials[field as keyof CredentialsState];
-        if (!value) {
-          toast({
-            title: "Required Field",
-            description: `Please enter ${getFieldLabel(field)}`,
-            variant: "destructive"
-          });
-          return false;
-        }
-      }
-      if (field === 'password' && !credentials.password) {
+      if (field === 'aadharId' && (!credentials.aadharId || credentials.aadharId.replace(/\s/g, '').length < 12)) {
         toast({
-          title: "Required Field",
-          description: "Please enter your password",
+          title: "Invalid Aadhar ID",
+          description: "Please enter a valid 12-digit Aadhar number",
           variant: "destructive"
         });
         return false;
       }
     }
+    
+    if (selectedRole !== 'farmer') {
+      const inputId = credentials.aggregatorId || credentials.organizationId || credentials.companyId || credentials.distributorId;
+      const expectedUsers = mockDatabase[selectedRole] || [];
+      const matchedUser = expectedUsers.find(u => u.id === inputId);
+      
+      if (!matchedUser) {
+        toast({ title: "Account Not Found", description: `The ID '${inputId || ''}' does not exist in our database.`, variant: "destructive" });
+        return false;
+      }
+      if (credentials.password !== matchedUser.password) {
+        toast({ title: "Incorrect Password", description: "The password you entered is incorrect.", variant: "destructive" });
+        return false;
+      }
+    }
+
     return true;
   };
 
-  // Firebase phone login (for Farmer, demo only)
-  const handleSubmitCredentials = async () => {
-    if (!validateCredentials()) return;
-    setIsLoading(true);
-    const roleConfig = getRoleConfig(selectedRole);
-    const requiresOtp = roleConfig?.fields.includes('otp');
-    if (selectedRole === 'farmer' && requiresOtp) {
-      try {
-        const auth = getAuth(firebaseApp);
-        if (!window.recaptchaVerifier) {
-          window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
+  const handleContinue = () => {
+    if (validateCredentials()) {
+      setIsLoading(true);
+      const roleConfig = getRoleConfig(selectedRole);
+      const needsOtp = roleConfig?.fields.includes('otp');
+      
+      setTimeout(() => {
+        setIsLoading(false);
+        if (needsOtp) {
+          setStep('otp-verification');
+        } else {
+          // Mock direct login for non-OTP flows
+          onLogin(selectedRole, credentials.aggregatorId || credentials.organizationId || credentials.distributorId || 'MOCK_ID');
         }
-        const appVerifier = window.recaptchaVerifier;
-        const phoneNumber = `+91${credentials.mobile}`;
-        const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
-        window.confirmationResult = confirmationResult;
-        toast({ title: 'OTP Required', description: 'Verification code sent!', variant: 'default' });
-        setStep('otp-verification');
-      } catch (err) {
-        toast({ title: 'OTP Error', description: 'Failed to send OTP', variant: 'destructive' });
-      }
-      setIsLoading(false);
-      return;
+      }, 800);
     }
-    // For other roles, fallback to demo login
-    setTimeout(() => {
-      toast({
-        title: "Login Successful",
-        description: `Welcome to ${roleConfig?.label}`,
-        variant: "default"
-      });
-      onLogin(selectedRole, demoCredentials[selectedRole as keyof typeof demoCredentials]?.userId || 'DEMO_USER');
-      setIsLoading(false);
-    }, 1200);
   };
 
-  const handleOtpChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return;
-    const newOtpDigits = [...otpDigits];
-    newOtpDigits[index] = value.slice(-1);
-    setOtpDigits(newOtpDigits);
-    // Auto-move to next field
+  // Handlers for OTP and Login
+  const handleVerifyOtp = () => {
+    const otp = otpDigits.join('');
+    if (otp === '111111') {
+      setIsFinalizing(true);
+      setTimeout(() => {
+        setIsFinalizing(false);
+        onLogin(selectedRole, credentials.aggregatorId || credentials.organizationId || credentials.distributorId || 'MOCK_ID');
+      }, 1000);
+    } else {
+      toast({ title: "Invalid OTP", description: "Hint: Use demo OTP 111111", variant: "destructive" });
+    }
+  };
+
+  const handleOtpDigitChange = (index: number, value: string) => {
+    if (value.length > 1) value = value.slice(-1);
+    const newDigits = [...otpDigits];
+    newDigits[index] = value;
+    setOtpDigits(newDigits);
+    
     if (value && index < 5) {
       otpInputRefs.current[index + 1]?.focus();
     }
   };
 
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleOtpKeyDown = (e: React.KeyboardEvent, index: number) => {
     if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
-      const prevInput = document.getElementById(`otp-${index - 1}`);
-      prevInput?.focus();
+      otpInputRefs.current[index - 1]?.focus();
     }
-  };
-
-  const handleBackToRole = () => {
-    setStep('role-selection');
-    setSelectedRole('');
-    setCredentials({
-      mobile: '',
-      aggregatorId: '',
-      organizationId: '',
-      companyId: '',
-      distributorId: '',
-      password: '',
-      requiresOtp: false
-    });
-    setOtpDigits(['', '', '', '', '', '']);
-    setShowPassword(false);
-  };
-
-  const handleBackToCredentials = () => {
-    setStep('credentials-entry');
-    setOtpDigits(['', '', '', '', '', '']);
-  };
-
-  const handleVerifyOtp = async () => {
-    if (otpDigits.some(d => !d)) {
-      toast({
-        title: "Incomplete OTP",
-        description: "Please enter all 6 digits of your OTP",
-        variant: "destructive"
-      });
-      return;
-    }
-    setIsLoading(true);
-    const enteredOtp = otpDigits.join('');
-    if (selectedRole === 'farmer') {
-      try {
-        const confirmationResult = window.confirmationResult;
-        await confirmationResult.confirm(enteredOtp);
-        setIsFinalizing(true);
-        toast({
-          title: "Authentication Successful",
-          description: `Welcome, Farmer!`,
-          variant: "default"
-        });
-        setTimeout(() => {
-          const auth = getAuth(firebaseApp);
-          onLogin('farmer', auth.currentUser?.uid || 'FARMER');
-        }, 2500);
-        return;
-      } catch (err) {
-        toast({ title: 'Authentication Failed', description: 'Invalid OTP', variant: 'destructive' });
-        setIsLoading(false);
-        return;
-      }
-    }
-    // Demo fallback for other roles
-    const roleConfig = getRoleConfig(selectedRole);
-    if (enteredOtp === '111111' || enteredOtp === '999999') {
-      setIsFinalizing(true);
-      toast({
-        title: "Authentication Successful",
-        description: `Welcome to ${roleConfig?.label}`,
-        variant: "default"
-      });
-      setTimeout(() => {
-        onLogin(selectedRole, demoCredentials[selectedRole as keyof typeof demoCredentials]?.userId || 'DEMO_USER');
-      }, 2500);
-      return;
-    }
-    toast({
-      title: "Authentication Failed",
-      description: "Invalid OTP. Demo OTP: 111111",
-      variant: "destructive"
-    });
-    setIsLoading(false);
-  };
-
-  const handleBackToRoles = () => {
-    setStep('role-selection');
-    setOtpDigits(['', '', '', '', '', '']);
   };
 
   return (
     <>
-      {(isFinalizing || isAuthLoading) && <AyuLoader />}
+      {isAuthLoading && <AyuLoader />}
       <div className="h-dvh flex flex-col lg:flex-row bg-gradient-to-br from-amber-50 via-green-50 to-green-100 overflow-hidden">
-      {/* Mobile Header - Removed for login screen on mobile */}
-
-      {/* Left Side - Image Section with Cinematic Overlay (40% on desktop) */}
-      <div className="hidden lg:flex lg:w-2/5 relative overflow-hidden">
-        {/* Background Image - High Quality Farmer Portrait */}
-        <img 
-          src={ayuestufrontpage} 
-          alt="Indian Farmer Harvesting Medicinal Plants"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
         
-        {/* Cinematic Gradient Overlay - Darker at edges for readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/40" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent" />
-
-        {/* Content Overlay - Professional Branding Section */}
-        <div className="relative z-10 w-full h-full flex flex-col justify-between p-6 md:p-8">
+        {/* Left Panel (40%) */}
+        <div className="hidden lg:flex lg:w-[40%] relative flex-col justify-between p-8 overflow-hidden">
+          {/* Background Image */}
+          <div className="absolute inset-0 z-0">
+            <img src={ayuestufrontpage} alt="AyuSetu Background" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-black/70" />
+          </div>
           
-          {/* TOP SECTION - Logo and Title (Left-Aligned) */}
-          <div className="space-y-4">
-            {/* Logo + Title Row */}
-            <div className="flex items-start gap-4">
-              {/* Small Circular Logo */}
-              <div className="w-14 h-14 rounded-full overflow-hidden backdrop-blur-md shadow-lg border-2 border-white/35 bg-white/15 p-0.5 flex items-center justify-center flex-shrink-0 hover:bg-white/25 transition-all duration-300">
-                <div className="w-full h-full rounded-full overflow-hidden bg-white/95 flex items-center justify-center">
-                  <img
-                    src={ayusetuEmblem}
-                    alt="AyuSetu Emblem"
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                </div>
-              </div>
-              
-              {/* Title and Subtitle */}
-              <div className="space-y-1">
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white drop-shadow-lg" style={{
-                  textShadow: '0 4px 12px rgba(0,0,0,0.5)'
-                }}>
-                  AyuSetu
-                </h1>
-                <p className="text-xs md:text-sm font-light text-white/80 leading-relaxed drop-shadow" style={{
-                  textShadow: '0 2px 6px rgba(0,0,0,0.4)'
-                }}>
-                  Trusted Herbal Supply Chain for Bharat
-                </p>
-              </div>
+          {/* Top Logo Section - Moved Up & Smaller */}
+          <div className="relative z-10 flex items-center gap-3 top-2">
+            <div className="w-12 h-12 rounded-full bg-[#3c4a3e]/70 backdrop-blur-md border border-white/10 flex items-center justify-center p-2">
+              <img src={ayusetuEmblem} alt="AyuSetu Emblem" className="w-full h-full object-contain" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-white tracking-tight">AyuSetu</h1>
+              <p className="text-white/90 text-sm mt-0 font-medium">
+                Trusted Herbal Supply Chain for Bharat
+              </p>
             </div>
           </div>
 
-          {/* BOTTOM SECTION - Trust Indicators (Left-Aligned Card) */}
-          <div className="space-y-2 backdrop-blur-md bg-white/10 p-2 md:p-3 rounded-lg border border-white/20 shadow-[0_8px_18px_rgba(15,23,42,0.13)] w-full max-w-xs">
-            {/* Trust Indicator 1 */}
-            <div className="flex items-start gap-2 group">
-              <div className="w-6 h-6 rounded-full bg-sky-300/20 flex items-center justify-center flex-shrink-0 group-hover:bg-sky-300/30 transition-all duration-300 border border-sky-300/35">
-                <svg className="w-3.5 h-3.5 text-sky-200" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fillRule="evenodd" d="M10 2.5a1 1 0 01.61.208l5.5 4.167a1 1 0 01.39.797V12.5c0 3.59-2.288 5.61-5.86 6.914a1 1 0 01-.68 0C6.388 18.11 4.1 16.09 4.1 12.5V7.672a1 1 0 01.39-.797l5.5-4.167A1 1 0 0110 2.5zm2.177 6.8a.75.75 0 10-1.06-1.06l-2.164 2.165-.87-.87a.75.75 0 00-1.06 1.06l1.4 1.4a.75.75 0 001.06 0l2.694-2.695z" clipRule="evenodd" />
-                </svg>
+          {/* Bottom Features Box - Smaller & Simpler */}
+          <div className="relative z-10 mb-4 bg-black/20 backdrop-blur-sm rounded-xl border border-white/10 p-4 max-w-[18rem] shadow-2xl">
+            <div className="flex items-center gap-3 pb-3 border-b border-white/10">
+              <div className="w-6 h-6 rounded-full bg-emerald-600/90 flex items-center justify-center shrink-0">
+                <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
               </div>
-              <div>
-                <p className="text-[11px] sm:text-xs font-semibold text-white/95 leading-tight">Government Verified System</p>
-              </div>
+              <span className="text-white/95 font-medium text-[13px]">Government Verified System</span>
             </div>
-
-            {/* Divider */}
-            <div className="h-px bg-white/10" />
-
-            {/* Trust Indicator 2 */}
-            <div className="flex items-start gap-2 group">
-              <div className="w-6 h-6 rounded-full bg-amber-300/20 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-300/30 transition-all duration-300 border border-amber-300/35">
-                <svg className="w-3.5 h-3.5 text-amber-200" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <circle cx="4" cy="6" r="1.5" fill="currentColor" />
-                  <circle cx="10" cy="10" r="1.5" fill="currentColor" />
-                  <circle cx="16" cy="6" r="1.5" fill="currentColor" />
-                  <circle cx="16" cy="14" r="1.5" fill="currentColor" />
-                  <path d="M5.2 6.8L8.8 9.2M11.2 9.2L14.8 6.8M11.2 10.8L14.8 13.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+            <div className="flex items-center gap-3 pt-3">
+              <div className="w-6 h-6 rounded-full bg-emerald-600/90 flex items-center justify-center shrink-0">
+                <Heart className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
               </div>
-              <div>
-                <p className="text-[11px] sm:text-xs font-semibold text-white/95 leading-tight">End-to-End Secure Traceability</p>
-              </div>
+              <span className="text-white/95 font-medium text-[13px]">End-to-End Secure Traceability</span>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Right Side - Login Panel (60% on desktop) */}
-      <div className={`${hasStarted ? 'flex flex-1 lg:w-3/5 items-center justify-center px-4 py-4 sm:px-6 sm:py-6 lg:p-16' : 'flex flex-1 lg:w-3/5 items-center justify-center px-4 py-4 sm:px-6 sm:py-6 lg:px-10 lg:py-10'}`}>
-        <div className={`relative overflow-hidden ${hasStarted ? 'w-full max-w-md bg-white/80 lg:bg-transparent backdrop-blur-sm lg:backdrop-blur-none rounded-2xl lg:rounded-none border border-white/70 lg:border-transparent p-4 sm:p-5 lg:p-0 shadow-sm lg:shadow-none' : 'w-full max-w-xl rounded-[2rem] border border-white/70 bg-white/90 p-5 sm:p-6 lg:p-8 shadow-2xl backdrop-blur-xl'}`}>
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className={`absolute -top-24 right-[-4rem] h-72 w-72 rounded-full blur-3xl ${hasStarted ? 'bg-emerald-200/20' : 'bg-emerald-200/40'}`} />
-            {!hasStarted && (
-              <div className="absolute bottom-[-6rem] left-[-5rem] h-80 w-80 rounded-full bg-amber-200/35 blur-3xl" />
-            )}
-            <div
-              className={`absolute inset-0 ${hasStarted
-                ? 'bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.06),transparent_40%)]'
-                : 'bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.12),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(217,119,6,0.1),transparent_30%)]'}`}
-            />
-          </div>
-
-          {/* Header */}
-          <div className={`${hasStarted ? 'relative z-10 mb-4 sm:mb-5 text-center' : 'relative z-10 mb-6 sm:mb-8 text-center lg:text-left'}`}>
-            {!hasStarted && (
-              <div className="mx-auto lg:mx-0 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-emerald-700 shadow-sm">
-                <span className="h-2 w-2 rounded-full bg-emerald-600" />
-                <span>Secure Access Portal</span>
-              </div>
-            )}
-            <h2 className={`${hasStarted ? 'text-2xl sm:text-3xl' : 'mt-4 text-3xl sm:text-4xl lg:text-5xl'} font-bold text-gray-900 mb-1`}>AyuSetu</h2>
-            <p className={`${hasStarted ? 'text-xs sm:text-sm' : 'text-xs sm:text-sm max-w-2xl mx-auto lg:mx-0'} text-gray-600`}>Ministry of AYUSH - Government of India</p>
-          </div>
-
-          {!hasStarted && (
-            <div className="relative z-10 flex justify-center">
-              <div className="w-full max-w-xl flex flex-col items-center text-center">
-                <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.35em] text-emerald-800">Get Started</p>
-                <h3 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-semibold text-gray-900 leading-tight tracking-tight">
-                  Start your AyuSetu access flow
-                </h3>
-                <p className="mt-3 text-sm sm:text-base text-gray-700 leading-relaxed max-w-lg mx-auto">
-                  Choose your role and enter the secure supply-chain dashboard in a few guided steps.
-                </p>
-
-                <div className="mt-5 flex flex-col items-center gap-3 w-full">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setHasStarted(true);
-                      setTimeout(() => {
-                        roleSelectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      }, 0);
-                    }}
-                    className="uiverse-button"
-                  >
-                    <svg viewBox="0 0 24 24" className="uiverse-button__arr uiverse-button__arr--left" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                      <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
-                    </svg>
-                    <span className="uiverse-button__text">Get Started</span>
-                    <span className="uiverse-button__circle" />
-                    <svg viewBox="0 0 24 24" className="uiverse-button__arr uiverse-button__arr--right" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                      <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
-                    </svg>
-                  </button>
-                </div>
-
-                <div className="mt-4 flex flex-wrap justify-center gap-2">
-                  <span className="rounded-full border border-emerald-200 bg-white/85 px-3 py-1 text-[11px] font-medium text-emerald-900 shadow-sm">Role-based access</span>
-                  <span className="rounded-full border border-emerald-200 bg-white/85 px-3 py-1 text-[11px] font-medium text-emerald-900 shadow-sm">Secure sign-in</span>
-                  <span className="rounded-full border border-emerald-200 bg-white/85 px-3 py-1 text-[11px] font-medium text-emerald-900 shadow-sm">Traceability ready</span>
-                </div>
-              </div>
-
-            </div>
-          )}
-
-
-          {hasStarted && step === 'role-selection' && (
-            <div ref={roleSelectionRef} className="relative z-10 space-y-4 animate-in fade-in duration-300 max-w-md mx-auto text-center w-full">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Select Your Role</h3>
-              
-              <div className="grid grid-cols-1 gap-4">
-                {roles.map((role) => (
-                  <button
-                    key={role.id}
-                    onClick={() => handleRoleSelect(role.id)}
-                    className={`group flex items-center gap-5 p-5 rounded-[2rem] border-2 border-transparent transition-all text-left ${role.color} hover:border-emerald-600 hover:bg-white hover:shadow-xl hover:shadow-emerald-900/5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2`}
-                  >
-                    <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-white rounded-2xl shadow-sm group-hover:scale-110 transition-transform duration-300">
-                      <span className="text-2xl leading-none">{role.icon}</span>
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-slate-900 text-base leading-tight mb-0.5 tracking-tight">
-                        {role.label}
-                      </p>
-                      <p className="text-xs sm:text-[13px] font-medium text-slate-600 leading-snug">
-                        {role.description}
-                      </p>
-                    </div>
-
-                    <ChevronRight size={18} className="text-slate-300 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Credentials Entry Step */}
-          {hasStarted && step === 'credentials-entry' && (
-            <div className="w-full max-w-xl rounded-[2rem] border border-white/70 bg-white/90 p-5 sm:p-6 lg:p-8 shadow-2xl backdrop-blur-xl mx-auto animate-in fade-in duration-300">
-              <div id="recaptcha-container" />
-              <div className="relative z-10 space-y-6 sm:space-y-7">
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-                  {getRoleConfig(selectedRole)?.loginLabel}
+        {/* Right Panel (60%) */}
+        <div className="w-full lg:w-[60%] flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-24 overflow-y-auto">
+          
+          {!hasStarted ? (
+            <div className="w-full max-w-2xl mx-auto flex flex-col justify-center min-h-[60vh] animate-in fade-in slide-in-from-bottom-8 duration-700">
+              <div className="space-y-6">
+                <h2 className="text-6xl lg:text-7xl xl:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-emerald-950 via-emerald-800 to-emerald-500 pb-4">
+                  Welcome to<br />AyuSetu.
                 </h2>
-                <p className="text-sm text-gray-600">Enter your credentials to proceed</p>
-              </div>
-
-              <div className="space-y-4">
-                {getRoleConfig(selectedRole)?.fields.map((field) => (
-                  <div key={field}>
-                    {field === 'mobile' && (
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">
-                          {getFieldLabel(field)}
-                        </label>
-                        <div className="flex gap-2">
-                          <div className="flex items-center px-4 py-3 bg-white border-2 border-gray-200 rounded-xl font-semibold text-gray-700 flex-shrink-0">
-                            +91
-                          </div>
-                          <input
-                            type="tel"
-                            placeholder="Enter 10-digit number"
-                            value={credentials.mobile}
-                            onChange={(e) => handleCredentialChange('mobile', e.target.value.replace(/\D/g, '').slice(0, 10))}
-                            maxLength={10}
-                            className="flex-1 px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all font-semibold text-gray-900 placeholder-gray-400"
-                          />
-                        </div>
-                        {credentials.mobile && (
-                          <p className="text-xs text-emerald-600 font-medium mt-2">
-                            ✓ +91{credentials.mobile.slice(-10)}
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    {field === 'aggregatorId' && (
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">
-                          {getFieldLabel(field)}
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g., AGG001"
-                          value={credentials.aggregatorId}
-                          onChange={(e) => handleCredentialChange('aggregatorId', e.target.value)}
-                          className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all font-semibold text-gray-900 placeholder-gray-400"
-                        />
-                      </div>
-                    )}
-
-                    {field === 'organizationId' && (
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">
-                          {getFieldLabel(field)}
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g., PROC001"
-                          value={credentials.organizationId}
-                          onChange={(e) => handleCredentialChange('organizationId', e.target.value)}
-                          className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all font-semibold text-gray-900 placeholder-gray-400"
-                        />
-                      </div>
-                    )}
-
-                    {field === 'companyId' && (
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">
-                          {getFieldLabel(field)}
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g., MFG001"
-                          value={credentials.companyId}
-                          onChange={(e) => handleCredentialChange('companyId', e.target.value)}
-                          className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all font-semibold text-gray-900 placeholder-gray-400"
-                        />
-                      </div>
-                    )}
-
-                    {field === 'distributorId' && (
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">
-                          {getFieldLabel(field)}
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g., DIST001"
-                          value={credentials.distributorId}
-                          onChange={(e) => handleCredentialChange('distributorId', e.target.value)}
-                          className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all font-semibold text-gray-900 placeholder-gray-400"
-                        />
-                      </div>
-                    )}
-
-                    {field === 'password' && (
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">
-                          {getFieldLabel(field)}
-                        </label>
-                        <div className="relative">
-                          <input
-                            type={showPassword ? 'text' : 'password'}
-                            placeholder="Enter your password"
-                            value={credentials.password}
-                            onChange={(e) => handleCredentialChange('password', e.target.value)}
-                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all font-semibold text-gray-900 placeholder-gray-400"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-900"
-                          >
-                            {showPassword ? '👁️' : '👁️‍🗨️'}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex justify-center mt-2">
-                <button
-                  type="button"
-                  onClick={handleSubmitCredentials}
-                  disabled={isLoading}
-                  className="uiverse-button"
-                >
-                  <svg viewBox="0 0 24 24" className="uiverse-button__arr uiverse-button__arr--left" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
-                  </svg>
-                  <span className="uiverse-button__text">{isLoading ? 'Processing...' : 'Continue'}</span>
-                  <span className="uiverse-button__circle" />
-                  <svg viewBox="0 0 24 24" className="uiverse-button__arr uiverse-button__arr--right" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
-                  </svg>
-                </button>
-              </div>
-
-              <button
-                onClick={handleBackToRole}
-                className="w-full text-sm text-emerald-700 hover:text-emerald-800 font-medium py-2 transition-colors"
-              >
-                ← Back to Role Selection
-			  </button>
-			  </div>
-			</div>
-          )}
-
-          {/* OTP Verification Step */}
-          {hasStarted && step === 'otp-verification' && (
-            <div className="w-full max-w-xl rounded-[2rem] border border-white/70 bg-white/90 p-5 sm:p-6 lg:p-8 shadow-2xl backdrop-blur-xl mx-auto animate-in fade-in duration-300">
-              <div className="relative z-10 space-y-6 sm:space-y-7">
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Verify with OTP</h2>
-                <p className="text-sm text-gray-600">
-                  Enter the verification code sent to your registered {selectedRole === 'farmer' ? 'mobile number' : 'email'}
+                <div className="w-24 h-2 rounded-full bg-emerald-500/30" />
+                <p className="text-2xl lg:text-3xl font-medium text-emerald-800/80 leading-snug max-w-lg pt-4">
+                  Your trusted herbal supply chain ecosystem.
                 </p>
               </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">
-                  Enter 6-Digit Code
-                </label>
-                <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                  {otpDigits.map((digit, index) => (
-                    <input
-                      key={index}
-                      id={`otp-${index}`}
-                      ref={el => otpInputRefs.current[index] = el}
-                      type="text"
-                      value={digit}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      maxLength={1}
-                      className="w-10 sm:w-12 h-12 sm:h-14 text-center text-xl sm:text-2xl font-bold rounded-lg border-2 border-gray-300 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all bg-white hover:border-gray-400"
-                      autoComplete="one-time-code"
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex justify-center mt-2">
+              
+              <div className="pt-16">
+                {/* Uiverse-style Get Started Button */}
                 <button
-                  type="button"
-                  onClick={handleVerifyOtp}
-                  disabled={isLoading}
-                  className="uiverse-button flex items-center gap-2 justify-center"
+                  onClick={() => setHasStarted(true)}
+                  className="group relative inline-flex h-16 w-64 items-center justify-center overflow-hidden rounded-full bg-emerald-600 font-medium text-neutral-50 shadow-[0_8px_30px_rgb(5,150,105,0.4)] transition-all duration-300 hover:bg-emerald-700 hover:shadow-[0_8px_30px_rgba(5,150,105,0.6)] hover:scale-[1.03] active:scale-[0.97]"
                 >
-                  <Lock size={18} />
-                  <span className="uiverse-button__text">{isLoading ? 'Verifying...' : 'Verify & Login'}</span>
-                  <span className="uiverse-button__circle" />
-                  <svg viewBox="0 0 24 24" className="uiverse-button__arr uiverse-button__arr--right" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
-                  </svg>
+                  <span className="mr-3 text-xl font-bold tracking-wider">Get Started</span>
+                  <ChevronRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" strokeWidth={3} />
+                  <div className="absolute inset-0 flex h-full w-full justify-center [transform:skew(-12deg)_translateX(-100%)] group-hover:duration-1000 group-hover:[transform:skew(-12deg)_translateX(100%)]">
+                    <div className="relative h-full w-12 bg-white/20" />
+                  </div>
                 </button>
               </div>
-
-              <button
-                onClick={handleBackToCredentials}
-                className="w-full text-sm text-emerald-700 hover:text-emerald-800 font-medium py-2 transition-colors"
-              >
-                Back to Credentials
-              </button>
             </div>
-          )}
+          ) : (
+            <div className="w-full max-w-md mx-auto space-y-8">
+              {step === 'role-selection' && (
+                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="text-center lg:text-left mb-8">
+                      <h2 className="text-3xl font-bold text-emerald-950 tracking-tight">Select your role</h2>
+                      <p className="text-emerald-700/80 mt-2 font-medium">Choose how you participate in the network</p>
+                    </div>
+                    
+                    <div className="grid gap-4">
+                      {roles.map((role) => (
+                        <button
+                          key={role.id}
+                          onClick={() => handleRoleSelect(role.id)}
+                          className={`flex items-center p-4 rounded-2xl border-2 border-transparent hover:border-emerald-500/30 transition-all duration-300 ${role.color} hover:shadow-lg group text-left w-full`}
+                        >
+                          <div className="w-12 h-12 flex items-center justify-center bg-white/50 rounded-xl text-2xl shadow-sm group-hover:scale-110 transition-transform">
+                            {role.icon}
+                          </div>
+                          <div className="ml-4 flex-1">
+                            <h3 className="text-emerald-950 font-semibold">{role.label}</h3>
+                            <p className="text-emerald-800/70 text-sm">{role.description}</p>
+                          </div>
+                          <ChevronRight className="text-emerald-400 group-hover:text-emerald-600 transition-colors" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-          {/* Security Footer */}
-          {!(hasStarted && step === 'role-selection') && (
-            <div className="relative z-10 mt-6 sm:mt-8 pt-4 sm:pt-5 border-t border-gray-200">
-              <div className="flex items-center justify-center gap-3 text-xs text-gray-600">
-                <div className="flex items-center gap-1">
-                  <svg className="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                  </svg>
-                  <span>Government Verified</span>
-                </div>
-                <div className="w-1 h-1 rounded-full bg-gray-400" />
-                <div className="flex items-center gap-1">
-                  <svg className="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-                  </svg>
-                  <span>End-to-End Secure</span>
-                </div>
+                {step === 'credentials-entry' && selectedRole && (
+                  <div className="animate-in slide-in-from-right-8 duration-500">
+                    <button
+                      onClick={() => setStep('role-selection')}
+                      className="text-emerald-600 hover:text-emerald-700 text-sm font-medium mb-6 flex items-center transition-colors"
+                    >
+                      ← Back to roles
+                    </button>
+
+                    <div className="mb-8">
+                      <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-3xl mb-4 border border-emerald-100">
+                        {getRoleConfig(selectedRole)?.icon}
+                      </div>
+                      <h2 className="text-2xl font-bold text-emerald-950">
+                        {getRoleConfig(selectedRole)?.loginLabel}
+                      </h2>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className={selectedRole === 'farmer' ? "grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-5" : "space-y-5"}>
+                        {getRoleConfig(selectedRole)?.fields.map(field => field !== 'otp' && (
+                          <div key={field} className={selectedRole === 'farmer' && ['fullName', 'location'].includes(field) ? 'sm:col-span-2' : ''}>
+                          <label className="block text-sm font-medium text-emerald-900 mb-1.5 ml-1">
+                            {getFieldLabel(field)}
+                          </label>
+                          {field === 'farmerType' ? (
+                            <div className="relative">
+                              <select
+                                className="w-full px-4 py-3 rounded-xl border border-emerald-200/60 bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm appearance-none outline-none text-emerald-950 font-medium"
+                                value={credentials[field as keyof CredentialsState] as string}
+                                onChange={(e) => handleCredentialChange(field, e.target.value)}
+                              >
+                                <option value="farmer">Farmer</option>
+                                <option value="collector">Collector</option>
+                              </select>
+                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-emerald-600">
+                                <ChevronDown className="w-5 h-5" />
+                              </div>
+                            </div>
+                          ) : field === 'aadharId' ? (
+                            <input
+                              type="text"
+                              maxLength={14}
+                              className="w-full px-4 py-3 rounded-xl border border-emerald-200/60 bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm tracking-widest text-emerald-950 font-medium"
+                              placeholder="XXXX XXXX XXXX"
+                              value={credentials[field as keyof CredentialsState] as string}
+                              onChange={(e) => {
+                                const val = e.target.value.replace(/\D/g, '');
+                                let formatted = val;
+                                if (val.length > 0) {
+                                  formatted = val.match(/.{1,4}/g)?.join(' ') || val;
+                                }
+                                if (formatted.length <= 14) handleCredentialChange(field, formatted);
+                              }}
+                            />
+                          ) : field === 'pincode' ? (
+                            <div className="relative">
+                              <input
+                                type="text"
+                                maxLength={6}
+                                className="w-full px-4 py-3 rounded-xl border border-emerald-200/60 bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm tracking-widest text-emerald-950 font-medium pr-20"
+                                placeholder="6-digit Pincode"
+                                value={credentials[field as keyof CredentialsState] as string}
+                                onChange={(e) => {
+                                  const val = e.target.value.replace(/\D/g, '');
+                                  if (val.length <= 6) handlePincodeUpdate(val);
+                                }}
+                              />
+                              <button 
+                                onClick={() => checkPincodeAPI(credentials.pincode as string)}
+                                disabled={(credentials.pincode || '').length !== 6}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-100 hover:bg-emerald-200 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                Check
+                              </button>
+                            </div>
+                          ) : field === 'mobile' ? (
+                            <div className="flex rounded-xl border border-emerald-200/60 bg-white focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition-all shadow-sm overflow-hidden">
+                              <span className="flex items-center px-4 bg-emerald-50 border-r border-emerald-100 text-emerald-800 font-medium select-none">
+                                +91
+                              </span>
+                              <input
+                                type="tel"
+                                maxLength={10}
+                                className="w-full px-4 py-3 bg-transparent outline-none"
+                                placeholder="Enter 10-digit number"
+                                value={credentials[field as keyof CredentialsState] as string}
+                                onChange={(e) => {
+                                  const val = e.target.value.replace(/\D/g, '');
+                                  if (val.length <= 10) handleCredentialChange(field, val);
+                                }}
+                              />
+                            </div>
+                          ) : (
+                            <input
+                              type={field === 'password' ? (showPassword ? 'text' : 'password') : 'text'}
+                              className="w-full px-4 py-3 rounded-xl border border-emerald-200/60 bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm"
+                              placeholder={`Enter ${getFieldLabel(field)}`}
+                              value={credentials[field as keyof CredentialsState] as string || ''}
+                              onChange={(e) => {
+                                let val = e.target.value;
+                                const isIdField = ['aggregatorId', 'organizationId', 'companyId', 'distributorId'].includes(field);
+                                if (isIdField) {
+                                  val = val.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                                  val = val.replace(/([A-Z]+)(\d+)/, '$1-$2');
+                                }
+                                handleCredentialChange(field, val);
+                              }}
+                            />
+                          )}
+                          </div>
+                        ))}
+                      </div>
+
+                      <Button 
+                        className="w-full py-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-base shadow-lg shadow-emerald-600/20 mt-4 group"
+                        onClick={handleContinue}
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                            <span>Processing...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>{selectedRole === 'farmer' ? 'Register & Continue' : 'Secure Login'}</span>
+                            <Lock className="w-4 h-4 ml-2 opacity-70 group-hover:opacity-100 transition-opacity" />
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {step === 'otp-verification' && (
+                  <div className="animate-in slide-in-from-right-8 duration-500">
+                    <button
+                      onClick={() => setStep('credentials-entry')}
+                      className="text-emerald-600 hover:text-emerald-700 text-sm font-medium mb-6 flex items-center"
+                    >
+                      ← Back
+                    </button>
+
+                    <div className="mb-8">
+                      <h2 className="text-2xl font-bold text-emerald-950 mb-2">Two-Factor Auth</h2>
+                      <p className="text-emerald-700/80">
+                        Enter the 6-digit code sent to your registered device.
+                      </p>
+                    </div>
+
+                    <div className="flex justify-between gap-2 mb-8">
+                      {otpDigits.map((digit, idx) => (
+                        <input
+                          key={idx}
+                          ref={el => otpInputRefs.current[idx] = el}
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={1}
+                          className="w-12 h-14 text-center text-xl font-semibold bg-white border border-emerald-200/60 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm"
+                          value={digit}
+                          onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
+                          onKeyDown={(e) => handleOtpKeyDown(e, idx)}
+                        />
+                      ))}
+                    </div>
+
+                    <Button 
+                      className="w-full py-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-base shadow-lg shadow-emerald-600/20"
+                      onClick={handleVerifyOtp}
+                      disabled={isFinalizing}
+                    >
+                      {isFinalizing ? (
+                        <>
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          <span>Verifying...</span>
+                        </>
+                      ) : (
+                        "Verify & Access"
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            )}
         </div>
-      </div>
       </div>
     </>
   );
