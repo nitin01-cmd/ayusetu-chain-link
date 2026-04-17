@@ -34,8 +34,8 @@ All colors MUST be HSL. Official government styling with earthy ayurvedic accent
     --success-foreground: 142 10% 95%;
     --warning: 38 92% 50%;
     --warning-foreground: 38 10% 15%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 142 76% 15%;
+    --destructive-foreground: 142 50% 95%;
 
     /* Card & Surface - Natural Tones */
     --card: 45 40% 98%;
@@ -59,7 +59,7 @@ All colors MUST be HSL. Official government styling with earthy ayurvedic accent
     /* AyuSetu Status Colors */
     --gov-verified: 120 40% 40%;
     --gov-pending: 38 75% 55%;
-    --gov-rejected: 0 65% 55%;
+    --gov-rejected: 142 76% 15%;
 
     /* Natural Gradients - Matching Logo Theme */
     --gradient-primary: linear-gradient(135deg, hsl(95 20% 25%), hsl(95 25% 30%));
@@ -141,7 +141,7 @@ All colors MUST be HSL. Official government styling with earthy ayurvedic accent
   }
 
   .badge-rejected {
-    @apply bg-destructive text-destructive-foreground px-3 py-1 rounded-full text-sm font-medium;
+    @apply bg-destructive text-destructive-foreground px-3 py-1 rounded-full text-sm font-medium border border-emerald-500/30;
   }
 
   /* Premium Glass Cards */

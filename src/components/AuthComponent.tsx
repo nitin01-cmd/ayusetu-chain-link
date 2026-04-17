@@ -713,27 +713,59 @@ const AuthComponent = ({ onLogin }: AuthComponentProps) => {
                                type="text"
                                placeholder="e.g. FARM-123456"
                                value={credentials.aggregatorId}
-                               onChange={(e) => setCredentials(prev => ({ ...prev, aggregatorId: e.target.value.toUpperCase() }))}
+                               onChange={(e) => {
+                                 let val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                                 val = val.replace(/([A-Z]+)(\d+)/, '$1-$2');
+                                 setCredentials(prev => ({ ...prev, aggregatorId: val }));
+                               }}
                                className="flex-1 h-14 px-5 rounded-2xl bg-emerald-50/30 border-2 border-emerald-100 font-mono font-bold text-emerald-700 outline-none focus:border-emerald-500 transition-all"
                              />
                              <Button 
                                onClick={async () => {
-                                 const docRef = doc(firestore, 'farmers', credentials.aggregatorId || '');
-                                 const docSnap = await getDoc(docRef);
-                                 if (docSnap.exists()) {
-                                   const data = docSnap.data();
-                                   setCredentials({
-                                     ...credentials,
-                                     fullName: data.fullName,
-                                     mobile: data.mobile,
-                                     location: data.location,
-                                     pincode: data.pincode,
-                                     farmerType: data.type || 'farmer'
-                                   });
-                                   setFarmerTab('new'); // Switch to view/edit their details
-                                   toast({ title: "Profile Located", description: "Identity verified in global registry." });
-                                 } else {
-                                   toast({ title: "PIN Not Found", description: "No record matches this identity.", variant: "destructive" });
+                                 if (!credentials.aggregatorId) {
+                                   toast({ title: "Input Required", description: "Please enter your Identity PIN.", variant: "destructive" });
+                                   return;
+                                 }
+                                 
+                                 setIsLoading(true);
+                                 try {
+                                   console.log("Searching for farmer ID:", credentials.aggregatorId);
+                                   const searchId = credentials.aggregatorId.toUpperCase();
+                                   
+                                   // Try searching by document ID first
+                                   let docRef = doc(firestore, 'farmers', searchId);
+                                   let docSnap = await getDoc(docRef);
+                                   
+                                   if (!docSnap.exists()) {
+                                     // Try searching by the 'id' field if document ID didn't match
+                                     const { query, collection, where, getDocs, limit } = await import('firebase/firestore');
+                                     const q = query(collection(firestore, 'farmers'), where('id', '==', searchId), limit(1));
+                                     const snapshot = await getDocs(q);
+                                     if (!snapshot.empty) {
+                                       docSnap = snapshot.docs[0] as any;
+                                     }
+                                   }
+
+                                   if (docSnap && docSnap.exists()) {
+                                     const data = docSnap.data();
+                                     setCredentials({
+                                       ...credentials,
+                                       fullName: data.fullName || data.name || '',
+                                       mobile: data.mobile || '',
+                                       location: data.location || '',
+                                       pincode: data.pincode || '',
+                                       farmerType: data.type || 'farmer'
+                                     });
+                                     setFarmerTab('new'); // Switch to view/edit their details
+                                     toast({ title: "Profile Located", description: `Identity verified for ${data.fullName || data.name}.` });
+                                   } else {
+                                     toast({ title: "PIN Not Found", description: "No record matches this identity in the global registry.", variant: "destructive" });
+                                   }
+                                 } catch (err) {
+                                   console.error("Search error:", err);
+                                   toast({ title: "Network Error", description: "Failed to connect to registry ledger.", variant: "destructive" });
+                                 } finally {
+                                   setIsLoading(false);
                                  }
                                }}
                                className="h-14 px-6 bg-emerald-950 text-white rounded-2xl font-black text-[10px] tracking-widest"
