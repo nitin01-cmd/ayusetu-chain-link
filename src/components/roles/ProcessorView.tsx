@@ -25,7 +25,7 @@ interface ProcessorViewProps {
 
 const ProcessorView = ({ userId }: ProcessorViewProps) => {
   const { toast } = useToast();
-  const { batches, loading } = useBatches(userId);
+  const { batches, loading } = useBatches('processor', userId);
   const [activeForm, setActiveForm] = useState<'receiveLot' | 'logProcessing' | 'qualityTest' | 'recall' | null>(null);
   
   const [formData, setFormData] = useState({
@@ -182,7 +182,7 @@ const ProcessorView = ({ userId }: ProcessorViewProps) => {
                   <tr key={batch.id} className="hover:bg-emerald-50/30 transition-colors group">
                     <td className="px-8 py-6 font-mono font-bold text-sm text-emerald-900">{batch.batch_id}</td>
                     <td className="px-8 py-6">
-                       <span className="font-black text-emerald-950 block">{batch.herb_name || 'Herbal Blend'}</span>
+                       <span className="font-black text-emerald-950 block">{batch.product_name || 'Herbal Blend'}</span>
                        <span className="text-[10px] font-bold text-slate-400 uppercase">{batch.type}</span>
                     </td>
                     <td className="px-8 py-6 font-black text-emerald-950">{batch.quantity}</td>
@@ -283,7 +283,7 @@ const ProcessorView = ({ userId }: ProcessorViewProps) => {
                 >
                    <option value="">Select parent lot</option>
                    {batches.map((batch) => (
-                     <option key={batch.id} value={batch.batch_id}>{batch.batch_id} - {batch.herb_name}</option>
+                     <option key={batch.id} value={batch.batch_id}>{batch.batch_id} - {batch.product_name}</option>
                    ))}
                 </select>
               </div>
