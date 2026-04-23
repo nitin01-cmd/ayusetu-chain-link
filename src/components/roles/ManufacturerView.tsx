@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import FarmerDetailsDialog from '@/components/FarmerDetailsDialog';
 import { useBatches } from '@/hooks/useBatches';
 import { PackagePlus, QrCode, UserCircle, AlertTriangle } from 'lucide-react';
+import QRCode from 'react-qr-code';
 
 interface ManufacturerViewProps {
   userId: string;
@@ -368,7 +369,11 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
                 <div key={batch.id} className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-indigo-300 transition-colors group">
                   <div className="font-bold text-slate-800 text-sm mb-3">Product: {batch.batch_id}</div>
                   <div className="bg-slate-50 p-4 rounded-xl text-center font-mono text-xs border border-dashed border-slate-300 flex flex-col items-center justify-center gap-2 group-hover:bg-indigo-50 transition-colors">
-                    <QrCode className="w-12 h-12 text-slate-400 group-hover:text-indigo-500" />
+                    {batch.metadata?.qrCode ? (
+                      <QRCode value={batch.metadata.qrCode} size={80} />
+                    ) : (
+                      <span className="text-slate-400">GENERATING_QR...</span>
+                    )}
                     <span className="text-slate-600 font-bold break-all">{batch.metadata?.qrCode || 'GENERATING_QR...'}</span>
                   </div>
                   <Badge className={`mt-4 w-full justify-center ${getStatusColor(batch.status)}`}>

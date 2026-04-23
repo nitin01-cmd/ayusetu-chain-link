@@ -361,13 +361,7 @@ const CreateBatchForFarmerComponent = ({ collectorName, collectorId, onBatchCrea
                   <Button onClick={captureLocation} className="bg-white text-black font-black text-[10px] rounded-xl px-4 h-10">SCAN</Button>
                </div>
                <div className="bg-white border border-emerald-100 rounded-3xl p-6 flex flex-col items-center gap-4 min-h-[200px] relative overflow-hidden">
-                  {!cameraActive ? (
-                    formData.imageUrl ? (
-                      <img src={formData.imageUrl} className="w-full h-full object-cover absolute inset-0" alt="harvest" />
-                    ) : (
-                      <Button onClick={startCamera} className="bg-emerald-600 text-white font-black text-xs px-8 h-12 rounded-2xl">START CAMERA</Button>
-                    )
-                  ) : (
+                  {cameraActive ? (
                     <div className="absolute inset-0 z-30 flex flex-col">
                       <video ref={videoRef} autoPlay playsInline className="w-full flex-1 object-cover" />
                       <div className="p-4 bg-black/80 flex gap-2">
@@ -375,6 +369,12 @@ const CreateBatchForFarmerComponent = ({ collectorName, collectorId, onBatchCrea
                         <Button onClick={stopCamera} className="text-white border-white/20 h-12 rounded-2xl font-black text-xs">CANCEL</Button>
                       </div>
                     </div>
+                  ) : (
+                    formData.imageUrl ? (
+                      <img src={formData.imageUrl} className="w-full h-full object-cover absolute inset-0" alt="harvest" />
+                    ) : (
+                      <Button onClick={startCamera} className="bg-emerald-600 text-white font-black text-xs px-8 h-12 rounded-2xl">START CAMERA</Button>
+                    )
                   )}
                   <canvas ref={canvasRef} className="hidden" />
                </div>
