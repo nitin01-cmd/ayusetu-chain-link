@@ -8,12 +8,38 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useToast } from '@/hooks/use-toast';
 import FarmerDetailsDialog from '@/components/FarmerDetailsDialog';
 import { useBatches } from '@/hooks/useBatches';
-import { PackagePlus, QrCode, UserCircle, AlertTriangle } from 'lucide-react';
+import { PackagePlus, QrCode, UserCircle, AlertTriangle, ExternalLink, Download } from 'lucide-react';
 import QRCode from 'react-qr-code';
 
 interface ManufacturerViewProps {
   userId: string;
 }
+
+const downloadQR = (elementId: string, filename: string) => {
+  const container = document.getElementById(elementId);
+  if (!container) return;
+  const svg = container.tagName.toLowerCase() === 'svg' ? container : container.querySelector('svg');
+  if (!svg) return;
+  const svgData = new XMLSerializer().serializeToString(svg);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  const img = new Image();
+  img.onload = () => {
+    canvas.width = img.width + 40;
+    canvas.height = img.height + 40;
+    if (ctx) {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 20, 20);
+      const pngFile = canvas.toDataURL('image/png');
+      const downloadLink = document.createElement('a');
+      downloadLink.download = `${filename}.png`;
+      downloadLink.href = pngFile;
+      downloadLink.click();
+    }
+  };
+  img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+};
 
 const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
   const [activeForm, setActiveForm] = useState<string | null>(null);
@@ -40,8 +66,11 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
     }
 
     try {
+      const newBatchId = `FP${Date.now().toString().slice(-6)}`;
+      const verificationUrl = `${window.location.origin}/verify/${newBatchId}`;
+
       await createBatch({
-        batch_id: `FP${Date.now().toString().slice(-6)}`,
+        batch_id: newBatchId,
         type: 'final_product',
         status: 'finalized',
         quantity: formData.selectedBatches.reduce((total, batchId) => {
@@ -52,7 +81,8 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
         metadata: {
           inputBatches: [...formData.selectedBatches],
           qcResults: formData.qcResults,
-          qrCode: `QR_FP${Date.now().toString().slice(-6)}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+          qrCode: `QR_${newBatchId}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+          verificationUrl: verificationUrl,
           batchPercentages: formData.batchPercentages
         }
       });
@@ -352,35 +382,72 @@ const ManufacturerView = ({ userId }: ManufacturerViewProps) => {
       </Dialog>
 
       <Dialog open={activeForm === 'generateQR'} onOpenChange={(open) => !open && setActiveForm(null)}>
-        <DialogContent className="sm:max-w-2xl bg-white/95 backdrop-blur-2xl border border-emerald-200/60 rounded-[2rem] p-0 overflow-hidden shadow-2xl max-h-[85vh] overflow-y-auto">
-          <div className="bg-gradient-to-br from-indigo-50 to-blue-50 px-8 py-6 border-b border-indigo-100 sticky top-0 z-10">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl bg-white/95 backdrop-blur-2xl border border-emerald-200/60 rounded-[1.5rem] sm:rounded-[2rem] p-0 overflow-hidden shadow-2xl max-h-[85vh] overflow-y-auto">
+          <div className="bg-gradient-to-br from-indigo-50 to-blue-50 px-4 sm:px-8 py-4 sm:py-6 border-b border-indigo-100 sticky top-0 z-10">
             <DialogHeader>
-              <DialogTitle className="text-xl font-black text-indigo-950 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
-                  <QrCode className="text-indigo-600 w-5 h-5" />
+              <DialogTitle className="text-lg sm:text-xl font-black text-indigo-950 flex items-center gap-2.5 sm:gap-3">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                  <QrCode className="text-indigo-600 w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
                 Master Product QR Database
               </DialogTitle>
             </DialogHeader>
           </div>
-          <div className="p-8">
+          <div className="p-4 sm:p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {batches.filter(b => b.type === 'final_product').map((batch) => (
-                <div key={batch.id} className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-indigo-300 transition-colors group">
-                  <div className="font-bold text-slate-800 text-sm mb-3">Product: {batch.batch_id}</div>
-                  <div className="bg-slate-50 p-4 rounded-xl text-center font-mono text-xs border border-dashed border-slate-300 flex flex-col items-center justify-center gap-2 group-hover:bg-indigo-50 transition-colors">
-                    {batch.metadata?.qrCode ? (
-                      <QRCode value={batch.metadata.qrCode} size={80} />
-                    ) : (
-                      <span className="text-slate-400">GENERATING_QR...</span>
-                    )}
-                    <span className="text-slate-600 font-bold break-all">{batch.metadata?.qrCode || 'GENERATING_QR...'}</span>
+              {batches.filter(b => b.type === 'final_product').map((batch) => {
+                const verifyUrl = `${window.location.origin}/verify/${batch.batch_id}`;
+                return (
+                  <div key={batch.id} className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-indigo-300 transition-colors group flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="font-bold text-slate-800 text-sm">Product: {batch.batch_id}</div>
+                        <Badge className={`${getStatusColor(batch.status)} text-[10px]`}>
+                          {batch.status === 'recalled' ? 'RECALLED' : batch.status}
+                        </Badge>
+                      </div>
+
+                      <div id={`mfg-qr-${batch.batch_id}`} className="bg-slate-50 p-4 rounded-xl text-center font-mono text-xs border border-dashed border-slate-300 flex flex-col items-center justify-center gap-2 group-hover:bg-indigo-50/60 transition-colors">
+                        <QRCode value={verifyUrl} size={100} />
+                        <span className="text-indigo-600 font-bold break-all text-[11px] mt-1">{batch.batch_id}</span>
+                        <span className="text-[10px] text-slate-500 font-sans">Scannable with Google Scan & Camera</span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <a
+                        href={`/verify/${batch.batch_id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex-1 min-w-[90px] py-2 px-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" /> Test Scan
+                      </a>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => downloadQR(`mfg-qr-${batch.batch_id}`, `QR_${batch.batch_id}`)}
+                        className="h-auto py-2 px-3 text-xs rounded-xl border-slate-200 gap-1.5 text-indigo-700 bg-white hover:bg-indigo-50"
+                      >
+                        <Download className="w-3.5 h-3.5" /> Save QR
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          navigator.clipboard.writeText(verifyUrl);
+                          toast({ title: "Link Copied", description: "Verification URL copied to clipboard." });
+                        }}
+                        className="h-auto py-2 px-2.5 text-xs rounded-xl border-slate-200"
+                      >
+                        Copy
+                      </Button>
+                    </div>
                   </div>
-                  <Badge className={`mt-4 w-full justify-center ${getStatusColor(batch.status)}`}>
-                    {batch.status === 'recalled' ? 'RECALLED' : batch.status}
-                  </Badge>
-                </div>
-              ))}
+                );
+              })}
               {batches.filter(b => b.type === 'final_product').length === 0 && (
                 <p className="col-span-full h-32 flex items-center justify-center text-sm font-medium text-slate-400">No Final Products Generated</p>
               )}

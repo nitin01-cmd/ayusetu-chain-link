@@ -8,6 +8,7 @@ import { Camera, MapPin, Leaf, CheckCircle, Loader, User, FileDown, ShieldCheck 
 import { motion, AnimatePresence } from 'framer-motion';
 import { collection, query, where, getDocs, limit, addDoc, setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { firestore } from '@/integrations/firebase/client';
+import QRCode from 'react-qr-code';
 
 interface CollectorBatchData {
   farmerName: string;
@@ -468,7 +469,12 @@ const CreateBatchForFarmerComponent = ({ collectorName, collectorId, onBatchCrea
                       <p className="text-[10px] font-black text-sky-600 uppercase tracking-[0.2em] mb-4">Traceability Lot ID</p>
                       <p className="text-5xl font-mono font-black text-slate-900 tracking-tighter">{batchId}</p>
                     </div>
-                    <Leaf className="text-sky-100 group-hover:text-sky-200 transition-colors" size={48} />
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="bg-white p-1.5 rounded-xl border border-sky-100 shadow-sm">
+                        <QRCode value={`${window.location.origin}/verify/${batchId}`} size={64} />
+                      </div>
+                      <span className="text-[8px] font-mono text-sky-600 font-bold">SCAN VERIFY</span>
+                    </div>
                   </div>
                   <div className="absolute left-0 top-0 w-1.5 h-full bg-sky-500"></div>
                 </motion.div>
